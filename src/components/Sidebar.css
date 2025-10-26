@@ -1,0 +1,45 @@
+    .sidebar {
+      width: 260px;
+      height: 100vh;
+      background: #f9fafb;
+      border-right: 1px solid #e5e7eb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto; /* ✅ Scrollable sidebar if menu is long */
+      transition: all 0.3s;
+      z-index: 1000;
+    }    
+    
+    .sidebar.collapsed {
+      width: 70px !important;
+      overflow-x: hidden;
+    }
+
+    .sidebar .nav-link {
+  color: #374151;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.sidebar .nav-link {
+  color: #374151; /* default gray */
+  border-radius: 8px;
+  padding: 8px 3px;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.sidebar .nav-link.active {
+  background: #d1fae5;  /* light green background */
+  color: #047857;       /* dark green text */
+  font-weight: 600;
+}

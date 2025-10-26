@@ -1,0 +1,12 @@
+@media (min-width: 1200px) {
+  .h3,
+  h3 {
+    font-size: 1.75rem;
+    padding-left: 16px;
+  }
+}
+
+.content {
+  transition: margin-left 0.3s;
+}
+/* Sidebar links */
