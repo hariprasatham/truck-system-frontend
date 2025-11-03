@@ -36,7 +36,6 @@ const FuelInvoiceManagement = () => {
       pst: 0,
       fet: 0,
       qst: 0,
-      final_amount: 9500,
       quantity: 120,
       final_amount: 9500.02,
       file_path: "/dummy/fuel_invoice1.pdf",

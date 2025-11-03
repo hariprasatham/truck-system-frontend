@@ -1,4 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import useUserStore from '../store/userStore';
+import { useEffect, useState } from 'react';
+import Loader from './Loader';
 
 /**
  * ProtectedRoute
@@ -9,13 +12,27 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
  */
 const ProtectedRoute = () => {
   const location = useLocation();
+    const { isAuthenticated, loading } = useUserStore();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // ✅ Replace this with your actual authentication logic
   // e.g. check token, cookie, or global auth state (Redux/Context)
 //   const isAuthenticated = Boolean(localStorage.getItem("authToken"));
-  const isAuthenticated = true;
 
-  if (!isAuthenticated) {
+
+  // Add a small delay to prevent flash of content
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsCheckingAuth(false);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || isCheckingAuth) {
+    return <Loader />;
+  }
+
+  if (!isAuthenticated()) {
     return (
       <Navigate
         to="/login"

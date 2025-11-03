@@ -14,12 +14,20 @@
 
 // export default Layout;
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Outlet } from "react-router-dom";
+import useMenuStore from "../store/menuStore";
+
 
 const Layout = () => {
-    const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const { fetchAllMenus, fetchUserMenus } = useMenuStore();
+
+  useEffect(() => {
+    fetchAllMenus();
+    fetchUserMenus();
+  }, []);
 
   return (
     <div className="d-flex">

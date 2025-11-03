@@ -1,38 +1,46 @@
 import React, { useState, useEffect } from "react";
-
+import useMenuStore from "../store/menuStore";
 const AssignMenusModal = ({ show, onClose, userId }) => {
   const [selectedMenus, setSelectedMenus] = useState([]);
-
-  const menus = [
-    { name: "Reports", icon: "bi bi-file-earmark-bar-graph" },
-    { name: "Menu Management", icon: "bi bi-link-45deg" },
-    { name: "Dashboard", icon: "bi bi-speedometer2" },
-    { name: "Companies", icon: "bi bi-building" },
-    { name: "Drivers", icon: "bi bi-file-earmark-person" },
-    { name: "Test", icon: "bi bi-truck" },
-    { name: "Truck", icon: "bi bi-truck" },
-    { name: "Fuel Invoice", icon: "bi bi-file-earmark-bar-graph" },
-    { name: "Pre Employment Check", icon: "bi bi-file-earmark-bar-graph" },
-  ];
+  const { fetchAssignedMenus, assignedMenus, allMenus, updateUserMenus, error } = useMenuStore();
 
   // Simulate previously assigned menus for the user
   useEffect(() => {
-    if (userId) {
-      setSelectedMenus(["Dashboard", "Reports"]);
-    }
+    const loadAssignedMenus = async () => {
+      if (!userId) return;
+
+      try {
+        await fetchAssignedMenus(userId);
+        // Use the response directly to avoid race conditions
+
+      } catch (error) {
+        console.error('Error loading assigned menus:', error);
+      }
+    };
+
+    loadAssignedMenus();
   }, [userId]);
 
-  const handleCheckboxChange = (menuName) => {
+
+  useEffect(() => {
+    setSelectedMenus(assignedMenus.map(menu => menu.id));
+  }, [assignedMenus]);
+
+  const handleCheckboxChange = (menuId) => {
     setSelectedMenus((prev) =>
-      prev.includes(menuName)
-        ? prev.filter((m) => m !== menuName)
-        : [...prev, menuName]
+      prev.includes(menuId)
+        ? prev.filter((m) => m !== menuId)
+        : [...prev, menuId]
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log(`✅ Menus assigned to User ${userId}:`, selectedMenus);
-    onClose();
+    await updateUserMenus(userId, selectedMenus);
+    if (!error) {
+      onClose();
+      setSelectedMenus([]);
+    }
   };
 
   return (
@@ -54,21 +62,26 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
             <p className="mb-3 text-muted">
               Assign access menus for <strong>User ID {userId}</strong>
             </p>
+            {error && (
+              <div className="alert alert-danger">
+                {error}
+              </div>
+            )}
 
             <ul className="list-group">
-              {menus.map((menu, idx) => (
+              {allMenus.map((menu, idx) => (
                 <li
                   key={idx}
                   className="list-group-item d-flex align-items-center justify-content-between"
                 >
                   <div className="d-flex align-items-center gap-2">
-                    <i className={`${menu.icon} text-success`}></i>
-                    <span>{menu.name}</span>
+                    <i className={`${menu?.icon} text-success`}></i>
+                    <span>{menu?.title}</span>
                   </div>
                   <input
                     type="checkbox"
-                    checked={selectedMenus.includes(menu.name)}
-                    onChange={() => handleCheckboxChange(menu.name)}
+                    checked={selectedMenus.includes(menu?.id)}
+                    onChange={() => handleCheckboxChange(menu?.id)}
                   />
                 </li>
               ))}
@@ -79,7 +92,7 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="button" className="btn btn-success" onClick={handleSave}>
+            <button type="button" className="btn btn-success" onClick={async () => handleSave()}>
               Save Changes
             </button>
           </div>

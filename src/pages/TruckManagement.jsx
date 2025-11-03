@@ -4,6 +4,7 @@ import "./TruckManagement.css";
 import AddTruckModal from "../components/AddTruckModal";
 import EditTruckModal from "../components/EditTruckModal";
 import DataTable from "react-data-table-component";
+import ViewTruckDetails from "../components/ViewTruckDetails";
 
 const TruckManagement = () => {
   // Dummy Equipment Data
@@ -97,7 +98,7 @@ const TruckManagement = () => {
       cell: (row) => (
         <span
           className={`status_badge ${
-            row .status === "Active"
+            row.status === "Active"
               ? "status-badge active"
               : "status-badge inactive"
           }`}
@@ -115,8 +116,8 @@ const TruckManagement = () => {
             variant="outline-primary"
             className="me-2"
             onClick={() => {
-              setEditData(row);
-              setShowEdit(true);
+              setViewData(row);
+              setShowView(true);
             }}
           >
             <i className="bi bi-eye"></i>
@@ -144,6 +145,8 @@ const TruckManagement = () => {
     },
   ];  
 
+  const [showView, setShowView] = useState(false);
+  const [viewData, setViewData] = useState(null);
 
   const [trucks, setTrucks] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(1);
@@ -228,6 +231,12 @@ const TruckManagement = () => {
 
         </div>
       </div>
+
+      <ViewTruckDetails 
+        open={showView}
+        onClose={() => setShowView(false)}
+        truck={viewData}
+      />
 
       {/* Add Equipment Modal */}
       <AddTruckModal 

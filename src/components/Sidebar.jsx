@@ -4,10 +4,15 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Tooltip } from "bootstrap";
 import "./Sidebar.css";
 
+import useMenuStore from "../store/menuStore";
+
 const Sidebar = ({ collapsed, setCollapsed }) => {
 
   const [openMenus, setOpenMenus] = useState({});
   const location = useLocation();
+
+  const { userMenus } = useMenuStore();
+
 
   // Initialize Bootstrap tooltips
   useEffect(() => {
@@ -24,31 +29,39 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     }));
   };
 
-  const menuItems = [
-    { name: "Dashboard", icon: "bi-speedometer2", path: "/dashboard" },
-    { name: "Companies", icon: "bi-building", path: "/companies" },
-    { name: "Menu Management", icon: "bi-link-45deg", path: "/menu-management" },
-    { name: "Truck Management", icon: "bi-truck", path: "/truck-management" },
-    { name: "Fuel Invoice", icon: "bi-file-earmark-bar-graph me-2", path: "/fuel-invoice-management" },
-    { name: "Pre-Employment Check", icon: "bi-file-earmark-bar-graph me-2", path: "/pre-employment-check" },
-    { name: "Drivers", icon: "bi-file-earmark-person me-2", path: "/drivers" },
-    {
-      name: "Reports",
-      icon: "bi-bar-chart",
-      submenu: [
-        { name: "Monthly", icon: "bi-calendar", path: "/reports/monthly" },
-        { name: "Yearly", icon: "bi-calendar2-check", path: "/reports/yearly" },
-      ],
-    },
-    {
-      name: "Settings",
-      icon: "bi-gear",
-      submenu: [
-        { name: "Profile", icon: "bi-person", path: "/settings/profile" },
-        { name: "Security", icon: "bi-shield-lock", path: "/settings/security" },
-      ],
-    },
-  ];
+  // const menuItems = [
+  //   { name: "Dashboard", icon: "bi-speedometer2", path: "/dashboard" },
+  //   { name: "Companies", icon: "bi-building", path: "/companies" },
+  //   { name: "Menu Management", icon: "bi-link-45deg", path: "/menu-management" },
+  //   { name: "Truck Management", icon: "bi-truck", path: "/truck-management" },
+  //   { name: "Fuel Invoice", icon: "bi-file-earmark-bar-graph me-2", path: "/fuel-invoice-management" },
+  //   { name: "Pre-Employment Check", icon: "bi-file-earmark-bar-graph me-2", path: "/pre-employment-check" },
+  //   { name: "Drivers", icon: "bi-file-earmark-person me-2", path: "/drivers" },
+  //   {
+  //     name: "Reports",
+  //     icon: "bi-bar-chart",
+  //     submenu: [
+  //       { name: "Monthly", icon: "bi-calendar", path: "/reports/monthly" },
+  //       { name: "Yearly", icon: "bi-calendar2-check", path: "/reports/yearly" },
+  //     ],
+  //   },
+  //   {
+  //     name: "Settings",
+  //     icon: "bi-gear",
+  //     submenu: [
+  //       { name: "Profile", icon: "bi-person", path: "/settings/profile" },
+  //       { name: "Security", icon: "bi-shield-lock", path: "/settings/security" },
+  //     ],
+  //   },
+  // ];
+
+  console.log(userMenus)
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
   return (
     <>
@@ -57,19 +70,19 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         {!collapsed && <h4 className="fw-bold mb-4 text-success">Dasher</h4>}
 
         <ul className="nav flex-column mb-auto">
-          {menuItems.map((item) => (
-            <li key={item.name} className="mb-2">
-              {item.submenu ? (
+          {userMenus.map((item) => (
+            <li key={item?.title} className="mb-2">
+              {item?.submenu ? (
                 <>
                   {/* Parent with submenu */}
                   <button
                     className={`nav-link w-100 d-flex justify-content-between align-items-center ${
-                      openMenus[item.name] ? "active" : ""
+                      openMenus[item?.title] ? "active" : ""
                     }`}
-                    onClick={() => toggleSubMenu(item.name)}
+                    onClick={() => toggleSubMenu(item.title)}
                     data-bs-toggle={collapsed ? "tooltip" : ""}
                     data-bs-placement="right"
-                    title={collapsed ? item.name : ""}
+                    title={collapsed ? item.title : ""}
                   >
                     <span className="d-flex align-items-center">
                       <i className={`${item.icon} me-2`}></i>
@@ -78,28 +91,28 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     {!collapsed && (
                       <i
                         className={`bi ${
-                          openMenus[item.name] ? "bi-chevron-down" : "bi-chevron-right"
+                          openMenus[item?.name] ? "bi-chevron-down" : "bi-chevron-right"
                         } small`}
                       ></i>
                     )}
                   </button>
 
                   {/* Submenu */}
-                  {openMenus[item.name] && (
+                  {openMenus[item?.title] && (
                     <div className="ps-3 mt-1">
-                      {item.submenu.map((sub) => (
+                      {item?.submenu.map((sub) => (
                         <Link
-                          key={sub.name}
-                          to={sub.path}
+                          key={sub?.title}
+                          to={sub?.url}
                           className={`d-block py-1 px-2 nav-link ${
-                            location.pathname === sub.path ? "active" : ""
+                            location.pathname === sub.url ? "active" : ""
                           }`}
                           data-bs-toggle={collapsed ? "tooltip" : ""}
                           data-bs-placement="right"
-                          title={collapsed ? sub.name : ""}
+                          title={collapsed ? sub.title : ""}
                         >
                           <i className={`${sub.icon} me-2`}></i>
-                          {!collapsed && <span>{sub.name}</span>}
+                          {!collapsed && <span>{sub.title}</span>}
                         </Link>
                       ))}
                     </div>
@@ -108,16 +121,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               ) : (
                 // Normal link
                 <Link
-                  to={item.path}
+                  to={item?.url}
                   className={`nav-link d-flex align-items-center ${
-                    location.pathname === item.path ? "active" : ""
+                    location.pathname === item?.url ? "active" : ""
                   }`}
                   data-bs-toggle={collapsed ? "tooltip" : ""}
                   data-bs-placement="right"
-                  title={collapsed ? item.name : ""}
+                  title={collapsed ? item?.title : ""}
                 >
                   <i className={`${item.icon} me-2`}></i>
-                  {!collapsed && <span>{item.name}</span>}
+                  {!collapsed && <span>{item?.title}</span>}
                 </Link>
               )}
             </li>
@@ -128,6 +141,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
         <div className="mt-auto text-center">
           <button
+            onClick={handleLogout}
             className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
             data-bs-toggle={collapsed ? "tooltip" : ""}
             data-bs-placement="right"

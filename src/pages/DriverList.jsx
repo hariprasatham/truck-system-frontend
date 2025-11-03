@@ -1,58 +1,161 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Button, Table, Pagination } from "react-bootstrap";
 import "./DriverManagement.css";
 import AddDriverModal from "../components/AddDriverModal";
-import { useParams, useNavigate } from "react-router-dom";
-const DriverList = ({ username = "JohnDoe" }) => {
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import DataTable from "react-data-table-component";
+import useCompanyDriverStore from "../store/companyDriverStore";
+import TableLoader from "../components/TableLoader";
+const DriverList = () => {
   // Dummy driver data
-  const [drivers, setDrivers] = useState([
-    {
-      id: 1,
-      name: "Arun Kumar",
-      license: "TN45 2024 345678",
-      phone: "9876543210",
-      truck_no: "TN45 AB 1234",
-      status: "active",
-      email: "arun.kumar@example.com",
-      address: "Coimbatore, Tamil Nadu",
-    },
-    {
-      id: 2,
-      name: "Vijay R",
-      license: "TN38 2023 987654",
-      phone: "9956234789",
-      truck_no: "TN38 CD 6789",
-      status: "inactive",
-      email: "vijay.r@example.com",
-      address: "Erode, Tamil Nadu",
-    },
-    {
-      id: 3,
-      name: "Karthick P",
-      license: "KA12 2022 456789",
-      phone: "9845012345",
-      truck_no: "KA12 EF 2468",
-      status: "active",
-      email: "karthick.p@example.com",
-      address: "Bengaluru, Karnataka",
-    },
-  ]);
+  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver } = useCompanyDriverStore();
 
-  const {companyId, userId} = useParams();
+
+  const { companyId, userId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  console.log("Params in DriverManagement:", {companyId, userId});
+
+  useEffect(() => {
+    fetchDriversByCompany(companyId, userId);
+  }, [companyId]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDriver, setNewDriver] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     license: "",
-    phone: "",
-    truck_no: "",
+    expiry_date: "",
+    company_id: companyId,
+    user_id: userId,
+    dispatcher: "driver",
     status: "active",
+    phone: "",
     email: "",
-    address: "",
+    state: "",
+    country: "",
+    canadian_hos: "70_7",
+    us_hos: "70_8",
+    yard_moves: true,
+    timezone : "",
+    personal_cmv: true,
+    
+
   });
+
+  const columns = [
+    {
+      name: "ID",
+      selector: (row) => row.id,
+      sortable: true,
+      width: "5%",
+    },
+    {
+      name: "Name",
+      selector: (row) => row.first_name + " " + row.last_name,
+      sortable: true,
+      width: "10%",
+    },
+    {
+      name: "License",
+      selector: (row) => row.license,
+      sortable: true,
+    },
+    {
+      name: "Phone",
+      selector: (row) => row.phone,
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => row.status,
+      sortable: true,
+      width: "10%",
+      cell: (row) => (
+        <span
+          className={`status-badge ${row.status === "active" ? "active" : "inactive"
+            }`}
+        >
+          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+        </span>
+      ),
+    },
+    {
+      name: "Email",
+      selector: (row) => row.email,
+      sortable: true,
+    },
+    {
+      name: "State",
+      selector: (row) => row.state,
+      sortable: true,
+    },
+    {
+      name: "Country",
+      selector: (row) => row.country,
+      sortable: true,
+    },
+    {
+      name: "Actions",
+      selector: (row) => row.actions,
+      width: "10%",
+      sortable: true,
+      cell: (row) => (
+        <>
+          {/* Activate / Deactivate */}
+          <button
+            className="btn-action"
+            onClick={() => handleToggleStatus(row.id, row.status)}
+          >
+            {row.status === "active" ? (
+              <i className="bi bi-slash-circle"></i>
+            ) : (
+              <i className="bi bi-check-circle"></i>
+            )}
+          </button>
+
+          {/* edit */}
+          <button
+            className="btn-action"
+            onClick={() => handleEditDriver(row.id)}
+          >
+            <i className="bi bi-pencil"></i>
+          </button>
+
+          {/* Delete (except admin) */}
+          <button
+            className="btn-action"
+            onClick={() => handleDelete(row.id)}
+          >
+            <i className="bi bi-trash"></i>
+          </button>
+
+
+        </>
+      ),
+    },
+  ]
+
+  const handleToggleStatus = async (id, status) => {
+    if (status === "active") {
+      status = "inactive"
+    } else {
+      status = "active"
+    }
+    await toggleDriverStatus(id, status)
+    await fetchDriversByCompany(companyId, userId)
+  };
+
+  const handleDelete = async (id) => {
+    await deleteDriver(id)
+    await fetchDriversByCompany(companyId, userId)
+  };
+
+  const handleEditDriver = async (id) => {
+    await fetchDriverById(id)
+    await fetchDriversByCompany(companyId, userId)
+  };
+
 
   // Handle input change for new driver
   const handleChange = (e) => {
@@ -62,15 +165,9 @@ const DriverList = ({ username = "JohnDoe" }) => {
 
   // Add new driver locally
   const handleAddDriver = () => {
-    if (!newDriver.name || !newDriver.license) {
-      alert("Please fill in all required fields");
-      return;
-    }
-    const newEntry = {
-      ...newDriver,
-      id: drivers.length + 1,
-    };
-    setDrivers((prev) => [...prev, newEntry]);
+
+    addDriver(newDriver)
+    
     setNewDriver({
       name: "",
       license: "",
@@ -89,7 +186,7 @@ const DriverList = ({ username = "JohnDoe" }) => {
       <div className="d-flex justify-content-between mb-3 align-items-center">
         <h3>
           <i className="bi bi-truck me-2"></i> Drivers of{" "}
-          <span className="text-primary">{username}</span>
+          <span className="text-primary">{location?.state?.username}</span>
         </h3>
         <div>
           <Button
@@ -110,10 +207,10 @@ const DriverList = ({ username = "JohnDoe" }) => {
           <h5 className="mb-0 fw-bold">Drivers</h5>
         </div>
 
-        <div className="card-body">
-          {drivers.length > 0 ? (
-            <div className="table-responsive">
-              <Table className="custom-table">
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <DataTable columns={columns} data={drivers} pagination />
+            {/* <Table className="custom-table">
                 <thead>
                   <tr>
                     <th>
@@ -155,11 +252,8 @@ const DriverList = ({ username = "JohnDoe" }) => {
                     </tr>
                   ))}
                 </tbody>
-              </Table>
-            </div>
-          ) : (
-            <p className="text-danger m-3">No drivers found for this user.</p>
-          )}
+              </Table> */}
+          </div>
         </div>
       </div>
 
@@ -171,6 +265,8 @@ const DriverList = ({ username = "JohnDoe" }) => {
         setNewDriver={setNewDriver}
         handleChange={handleChange}
         handleAddDriver={handleAddDriver}
+        progressPending={loading}
+        progressComponent={<TableLoader />}
       />
     </div>
   );

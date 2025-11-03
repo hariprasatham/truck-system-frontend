@@ -1,0 +1,56 @@
+.not-found-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 2rem 0;
+}
+
+.error-code {
+  font-size: 8rem;
+  font-weight: 700;
+  color: #e9ecef;
+  line-height: 1;
+  margin-bottom: 1rem;
+  text-shadow: 4px 4px 0 #fff, 6px 6px 0 #dee2e6;
+}
+
+h1 {
+  color: #343a40;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.lead {
+  color: #6c757d;
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.btn-primary {
+  padding: 0.5rem 2rem;
+  font-weight: 500;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .error-code {
+    font-size: 6rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .lead {
+    font-size: 1.1rem;
+  }
+}

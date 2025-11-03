@@ -5,6 +5,9 @@ import CompanyCard from "../components/CompanyCard";
 
 import AddCompanyModal from "../components/AddCompanyModel";
 
+import useCompaniesStore from "../store/companiesStore";
+
+
 // Example API fetch (replace with your API or props)
 const fetchCompanies = async () => {
   // Replace with actual fetch from backend
@@ -41,14 +44,14 @@ const fetchCompanies = async () => {
 };
 
 const Companies = () => {
-  const [companies, setCompanies] = useState([]);
     const [showModal, setShowModal] = useState(false);
 
+  const {companies, fetchCompanies, createCompany} = useCompaniesStore();
+
   const handleSave = (newCompany) => {
-    console.log("Saving company:", newCompany);
-    setCompanies([...companies, { ...newCompany, id: companies.length + 1, userCount: 0, driverCount: 0, company_name: newCompany.companyName, description: newCompany.description }]);
+    createCompany(newCompany);
     setShowModal(false);
-  };
+  };  
 
   const colors = [
     ["#ecf3eeff", "#9bc6aaff"], // green
@@ -59,8 +62,7 @@ const Companies = () => {
 
   useEffect(() => {
     const loadCompanies = async () => {
-      const data = await fetchCompanies();
-      setCompanies(data);
+      await fetchCompanies();
     };
     loadCompanies();
   }, []);

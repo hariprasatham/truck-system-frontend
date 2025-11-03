@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
+import useUserStore from '../store/userStore';
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const { login, loading, error } = useUserStore();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,22 +15,17 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    const { username, password } = formData;
+    console.log(username, password)
     try {
-      const response = await fetch('/api/login', { // Adapt your PHP login.php to this API endpoint
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
-        navigate('/dashboard'); // Redirect to dashboard on success
-      } else {
-        setError(data.message || 'Invalid credentials');
-      }
+      await login({ username, password });
+      // Redirect on success
+      navigate('/dashboard');
     } catch (err) {
-      setError('Login failed. Please try again.');
+      // Error is already handled by the store
     }
+      
+    
   };
 
   return (

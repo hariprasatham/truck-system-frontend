@@ -49,7 +49,7 @@ const AddUserModal = ({ show, onHide, newUser, setNewUser, handleInputChange, ha
                     onChange={handleInputChange}
                     required
                   >
-                    <option value="user">User</option>
+                    <option value="safety_engineer">Safety Engineer</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>

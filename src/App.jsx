@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -21,36 +21,51 @@ import FuelInvoiceManagement from "./pages/FuelInvoiceManagement";
 import ViewFuelData from "./pages/ViewFuelData";
 import PreEmploymentCheck from "./pages/PreEmploymentCheck";
 import DriverList from "./pages/DriverList";
+// import GlobalLoader from "./components/GlobalLoader";
+
+import useMenuStore from "./store/menuStore";
+import useUserStore from "./store/userStore";
+import NotFound from "./pages/NotFound";
+import PublicRoute from "./components/PublicRoute";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
+
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/companies/:companyId/user-management" element={<UserManagement />} />
-            <Route path="/companies/:companyId/user-management/:userId/drivers" element={<DriverList />} />
-            <Route path="/menu-management" element={<MenuManagement />} />
-            <Route path="/truck-management" element={<TruckManagement />} />
-            <Route path="/fuel-invoice-management" element={<FuelInvoiceManagement />} />
-            <Route path="/view-fuel-data/:fuelId" element={<ViewFuelData />} />
-            <Route path="/pre-employment-check" element={<PreEmploymentCheck />} />
-            <Route path="/drivers" element={<DriverManagement />} />
-            {/* <Route path="/profile" element={<Profile />} /> */}
+    <>
+      {/* <GlobalLoader /> */}
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          {/* Public route that should not be accessible when logged in */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
           </Route>
-        </Route>
 
-        {/* Catch-all for unmatched routes */}
-        <Route path="*" element={<div>404 Not Found</div>} />
-      </Routes>
-    </Router>
+
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/companies/:companyId/user-management" element={<UserManagement />} />
+              <Route path="/companies/:companyId/user-management/:userId/drivers" element={<DriverList />} />
+              <Route path="/menu-management" element={<MenuManagement />} />
+              <Route path="/truck-management" element={<TruckManagement />} />
+              <Route path="/fuel-invoice-management" element={<FuelInvoiceManagement />} />
+              <Route path="/view-fuel-data/:fuelId" element={<ViewFuelData />} />
+              <Route path="/pre-employment-check" element={<PreEmploymentCheck />} />
+              <Route path="/drivers" element={<DriverManagement />} />
+              {/* <Route path="/profile" element={<Profile />} /> */}
+            </Route>
+          </Route>
+
+          {/* Catch-all for unmatched routes */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </>
   );
 };
 

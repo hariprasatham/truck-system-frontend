@@ -1,0 +1,35 @@
+.table-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.spinner {
+  margin: 16px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border-top: 2px solid grey;
+  border-right: 2px solid grey;
+  border-bottom: 2px solid grey;
+  border-left: 4px solid black;
+  background: transparent;
+  animation: rotate360 1s linear infinite;
+}
+
+@keyframes rotate360 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-text {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
