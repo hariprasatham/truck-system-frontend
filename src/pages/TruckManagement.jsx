@@ -1,60 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Modal, Form, Table, Pagination } from "react-bootstrap";
 import "./TruckManagement.css";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import AddTruckModal from "../components/AddTruckModal";
 import EditTruckModal from "../components/EditTruckModal";
 import DataTable from "react-data-table-component";
 import ViewTruckDetails from "../components/ViewTruckDetails";
+import useCompanyTruckStore from "../store/companyTruckStore";
+import useUserStore  from "../store/userStore";
+import toast from "react-hot-toast";
+import TableLoader from "../components/TableLoader";
+import GlobalLoader from "../components/GlobalLoader";
 
 const TruckManagement = () => {
-  // Dummy Equipment Data
-  const initialData = [
-    {
-      id: 1,
-      truck_no: "TN 10 AB 1234",
-      model: "Tata 407",
-      capacity: "3 Tons",
-      company_name: "Larsen & Toubro",
-      username: "Arun",
-      status: "Active",
-    },
-    {
-      id: 2,
-      truck_no: "KA 05 CD 5678",
-      model: "Ashok Leyland Partner",
-      capacity: "5 Tons",
-      company_name: "Voltas",
-      username: "Vikram",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      truck_no: "MH 12 EF 9101",
-      model: "Mahindra Blazo",
-      capacity: "10 Tons",
-      company_name: "JK Infra",
-      username: "Ravi",
-      status: "Active",
-    },
-    {
-      id: 4,
-      truck_no: "TN 22 GH 4321",
-      model: "Eicher Pro 3015",
-      capacity: "7 Tons",
-      company_name: "BHEL",
-      username: "Suresh",
-      status: "Active",
-    },
-    {
-      id: 5,
-      truck_no: "KL 07 IJ 8765",
-      model: "BharatBenz 1214R",
-      capacity: "9 Tons",
-      company_name: "TVS Logistics",
-      username: "Karthik",
-      status: "Inactive",
-    },
-  ];
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { 
+    fetchTrucksByCompany, 
+    pagination, 
+    loading, 
+    error, 
+    trucks, 
+    changeTruckStatus, 
+    addTruck, 
+    fetchTruckById, 
+    updateTruck,
+    currentTruck,
+    deleteTruck 
+  } = useCompanyTruckStore();
+  const { user } = useUserStore();
+  
+   // Derived state
+  const role = user?.role;
+  const params = useParams();
+
+  const companyId = role === "admin" ? params.companyId : user?.companyId;
+  const userId = role === "admin" ? params.userId : user?.userId;
+
+// Fetch drivers on component mount or when companyId/userId changes
+  useEffect(() => {
+    const loadDrivers = async () => {
+      try {
+        await fetchTrucksByCompany(companyId);
+      } catch (error) {
+        toast.error(error.message || 'Failed to load drivers');
+      }
+    };
+
+    loadDrivers();
+  }, [companyId, fetchTrucksByCompany]);
+
+  const handleStatusChange = async (truckId, status) => {
+    const newStatus = status === "active" ? "inactive" : "active";
+    try {
+      await changeTruckStatus(truckId, newStatus);
+      await fetchTrucksByCompany(companyId);
+    } catch (error) {
+      toast.error(error.message || 'Failed to change truck status');
+    }
+  };
+
+  const handleDelete = async (truckId) => {
+    try {
+      await deleteTruck(truckId);
+      await fetchTrucksByCompany(companyId);
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete truck');
+    }
+  };
+
+  
 
   const columns = [
     {
@@ -69,10 +85,14 @@ const TruckManagement = () => {
       sortable: true,
     },
     {
+      name: "Equipment Type",
+      selector: (row) => row.equipment_type,
+      sortable: true,
+    },
+    {
       name: "Model",
       selector: (row) => row.model,
       sortable: true,
-            width: "200px",
     },
     {
       name: "Capacity",
@@ -82,12 +102,12 @@ const TruckManagement = () => {
     },
     {
       name: "Company",
-      selector: (row) => row.company_name,
+      selector: (row) => row.company.company_name,
       sortable: true,
     },
     {
       name: "User",
-      selector: (row) => row.username,
+      selector: (row) => row.user.username,
       sortable: true,
     },
     {
@@ -97,8 +117,9 @@ const TruckManagement = () => {
             width: "120px",
       cell: (row) => (
         <span
+          
           className={`status_badge ${
-            row.status === "Active"
+            row.status == "active"
               ? "status-badge active"
               : "status-badge inactive"
           }`}
@@ -111,35 +132,45 @@ const TruckManagement = () => {
       name: "Actions",
       cell: (row) => (
         <>
-        <Button
-            size="sm"
-            variant="outline-primary"
-            className="me-2"
+
+        {/* Activate / Deactivate */}
+          <button
+            className="btn-action"
+           onClick={() => handleStatusChange(row.id, row.status)}
+          >
+            {row.status === "active" ? (
+              <i className="bi bi-slash-circle"></i>
+            ) : (
+              <i className="bi bi-check-circle"></i>
+            )}
+          </button>
+
+        <button
+            className="btn-action"
             onClick={() => {
-              setViewData(row);
               setShowView(true);
+              setViewData(row);
+
             }}
           >
             <i className="bi bi-eye"></i>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline-primary"
-            className="me-2"
+          </button>
+          <button
+            className="btn-action"
             onClick={() => {
-              setEditData(row);
-              setShowEdit(true);
+              handlePencilClick(row.id);
             }}
           >
             <i className="bi bi-pencil"></i>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline-danger"
-            onClick={() => setTrucks(trucks.filter((x) => x.id !== row.id))}
+          </button>
+          <button
+            className="btn-action"
+            onClick={()=>{
+              handleDelete(row.id);
+            }}
           >
             <i className="bi bi-trash"></i>
-          </Button>
+          </button>
         </>
       ),
     },
@@ -148,64 +179,60 @@ const TruckManagement = () => {
   const [showView, setShowView] = useState(false);
   const [viewData, setViewData] = useState(null);
 
-  const [trucks, setTrucks] = useState(initialData);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
-
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  // Pagination
-  const totalPages = Math.ceil(trucks.length / itemsPerPage);
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentData = trucks.slice(indexOfFirst, indexOfLast);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
 
   // Add Equipment
-  const handleAdd = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const newTruck = {
-      id: Date.now(),
-      truck_no: form.truck_no.value,
-      model: form.model.value,
-      capacity: form.capacity.value,
-      company_name: form.company_name.value,
-      username: form.username.value,
-      status: form.status.value,
-    };
-    setTrucks([...trucks, newTruck]);
-    setShowAdd(false);
+  const handleAdd = async (formData) => {
+    try {
+      await addTruck(formData, { companyId, userId });
+      await fetchTrucksByCompany(companyId);
+      setShowAdd(false);
+    } catch (error) {
+      toast.error(error.message || 'Failed to add truck');
+    }
+
+    
   };
 
   // Edit Equipment
-  const handleEdit = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const updated = trucks.map((truck) =>
-      truck.id === editData.id
-        ? {
-            ...truck,
-            truck_no: form.truck_no.value,
-            model: form.model.value,
-            capacity: form.capacity.value,
-            company_name: form.company_name.value,
-            username: form.username.value,
-            status: form.status.value,
-          }
-        : truck
-    );
-    setTrucks(updated);
-    setShowEdit(false);
+  const handleEdit = async (updatedData) => {
+    try {
+      // Update the truck in the backend
+      await updateTruck(editData.id, updatedData);
+      // Refresh the trucks list
+      await fetchTrucksByCompany(companyId);
+      setShowEdit(false);
+    } catch (error) {
+      toast.error(error.message || 'Failed to update truck');
+    }
+  };
+
+  const handlePencilClick = async (truckId) => {
+
+    console.log("truckId", truckId);
+    try {
+      const truck = await fetchTruckById(truckId);
+      setEditData(truck);
+      setShowEdit(true);
+    } catch (error) {
+      toast.error('Failed to load truck details');
+    }
+  };
+
+  const handlePerRowsChange = (rowsPerPage) => {
+    fetchTrucksByCompany(companyId, { limit: rowsPerPage });
+  };
+
+  const handlePageChange = (page) => {
+    fetchTrucksByCompany(companyId, { page });
   };
 
   return (
     <div className="content">
+      <GlobalLoader loading={loading} />
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
           <h3 className="mb-0 ms-3">Equipment Management</h3>
@@ -220,15 +247,24 @@ const TruckManagement = () => {
       </div>
 
       {/* Table */}
-      <div className="card shadow">
-        <div className="table-responsive">
-          <DataTable
-            columns={columns}
-            data={currentData}
-            noHeader
-            pagination={true}
-          />
-
+      <div className="card shadow-sm border-0">
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <DataTable
+              columns={columns}
+              data={trucks}
+              noHeader
+              pagination={true}
+                paginationServer={true}
+                paginationTotalRows={pagination.total}
+                paginationRowsPerPage={pagination.limit}
+                paginationRowsPerPageOptions={[5, 10, 20]}
+                onChangePage={handlePageChange}
+                onChangeRowsPerPage={handlePerRowsChange}
+                progressPending={loading}
+                progressComponent={<TableLoader />}
+            />
+          </div>
         </div>
       </div>
 
@@ -246,7 +282,7 @@ const TruckManagement = () => {
       />
 
       {/* Edit Equipment Modal */}
-      {editData && (
+{editData && (
         <EditTruckModal 
           showEdit={showEdit}
           setShowEdit={setShowEdit}

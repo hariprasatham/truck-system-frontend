@@ -3,15 +3,25 @@ import { Modal, Button, Form, Accordion, Row, Col, Alert } from 'react-bootstrap
 
 import useCompanyDriverStore from '../store/companyDriverStore'
 
-const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver, handleAddDriver }) => {
+const EditDriverModal = ({ 
+  showEditModal, 
+  setShowEditModal, 
+  newDriver = {}, 
+  setNewDriver, 
+  handleEditDriver 
+}) => {
+  // Initialize newDriver as an empty object if undefined
+  const safeNewDriver = newDriver || {};
 
-  const { loading, error } = useCompanyDriverStore();
+  const { loading, error } = useCompanyDriverStore() || {};
 
 
 
   const onSubmit = (e) => {
     e.preventDefault();
-    handleAddDriver();
+    if (handleEditDriver) {
+      handleEditDriver();
+    }
   };
 
   const onChange = (e) => {
@@ -19,23 +29,27 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
     const { name, value } = e.target;
 
     if (name === "yard_moves" || name === "personal_cmv") {
-      setNewDriver((prev) => ({ ...prev, [name]: !prev[name] }));
+      setNewDriver((prev) => ({ ...(prev || {}), [name]: !(prev?.[name] || false) }));
     } else {
-      setNewDriver((prev) => ({ ...prev, [name]: value }));
+      setNewDriver((prev) => ({ ...(prev || {}), [name]: value }));
     }
 
 
   };
 
+  console.log('Modal show state:', showEditModal);
+console.log('Current driver data:', safeNewDriver);
+
 
   return (
     <Modal
-      show={showAddModal}
-      onHide={() => setShowAddModal(false)}
+      show={showEditModal}
+      onHide={() => setShowEditModal(false)}
       size="lg"
       scrollable
       centered
       backdrop="static"
+      style={{ zIndex: 9999 }} 
     >
       <Modal.Header closeButton>
         <Modal.Title className="fw-bold text-success">
@@ -246,7 +260,7 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
           {/* Submit Button */}
           <div className="mt-3 text-end">
             <Button type="submit" variant="success" size="sm" className="px-3" disabled={loading}>
-              <i className="bi bi-save"></i> Save Driver
+              <i className="bi bi-save"></i> Update Driver
             </Button>
           </div>
         </Form>
@@ -255,4 +269,4 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
   )
 }
 
-export default AddDriverModal
+export default EditDriverModal

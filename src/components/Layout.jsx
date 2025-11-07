@@ -18,14 +18,18 @@ import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Outlet } from "react-router-dom";
 import useMenuStore from "../store/menuStore";
+import useUserStore from "../store/userStore";
 
 
 const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { fetchAllMenus, fetchUserMenus } = useMenuStore();
+  const { user } = useUserStore();
 
   useEffect(() => {
-    fetchAllMenus();
+    if(user.role == "admin"){
+      fetchAllMenus();
+    }
     fetchUserMenus();
   }, []);
 

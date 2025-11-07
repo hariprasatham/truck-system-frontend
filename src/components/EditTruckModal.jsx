@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 
-const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
+const EditTruckModal = ({showEdit, setShowEdit, handleEdit, editData}) => {
   const [formData, setFormData] = useState({
     truck_no: "",
     truck_brand: "",
     equipment_type: "",
-    truck_type: "",
-    trailer_type: "",
-    forklift_type: "",
+    sub_type: "",
     truck_ownership: "",
     model: "",
     capacity: "",
-    status: "active",
+    status: "",
   });
+
+  useEffect(() => {
+    if (editData) {
+      setFormData({...editData});
+    }
+  }, [editData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,6 +26,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
 
   // Dynamically handle visibility for type sections
   useEffect(() => {
+    if (!formData) return;
     const { equipment_type } = formData;
     const truckTypeDiv = document.getElementById("truckTypeDiv");
     const trailerTypeDiv = document.getElementById("trailerTypeDiv");
@@ -38,12 +43,38 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
       if (equipment_type === "Forklift")
         forkliftTypeDiv.classList.remove("d-none");
     }
-  }, [formData.equipment_type]);
+  }, [formData?.equipment_type]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("🚚 Submitted Equipment Data:", formData);
-    alert("Equipment added successfully (dummy submit)");
+    handleEdit(formData);
+  };
+
+  const handleClose = () => {
+    setShowEdit(false);
+    setFormData({
+      truck_no: "",
+      truck_brand: "",
+      equipment_type: "",
+      sub_type: "",
+      truck_ownership: "",
+      model: "",
+      capacity: "",
+      status: "",
+    });
+  };
+
+  const handleExited = () => {
+    setFormData({
+      truck_no: "",
+      truck_brand: "",
+      equipment_type: "",
+      sub_type: "",
+      truck_ownership: "",
+      model: "",
+      capacity: "",
+      status: "",
+    });
   };
 
   return (
@@ -53,7 +84,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
       tabIndex="-1"
       aria-hidden="true"
     >
-      <Modal size="lg" show={showEdit} onHide={() => setShowEdit(false)}>
+      <Modal size="lg" show={showEdit} onHide={handleClose} onExited={handleExited}>
         <div className="modal-content">
           <form onSubmit={handleSubmit}>
             <Modal.Header closeButton>
@@ -79,7 +110,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                           name="truck_no"
                           className="form-control"
                           placeholder="Enter Truck Number"
-                          value={formData.truck_no}
+                          value={formData?.truck_no}
                           onChange={handleChange}
                           required
                         />
@@ -90,7 +121,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                         <select
                           name="truck_brand"
                           className="form-control"
-                          value={formData.truck_brand}
+                          value={formData?.truck_brand}
                           onChange={handleChange}
                           required
                         >
@@ -107,7 +138,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                         <select
                           name="equipment_type"
                           className="form-control"
-                          value={formData.equipment_type}
+                          value={formData?.equipment_type}
                           onChange={handleChange}
                           required
                         >
@@ -122,9 +153,9 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                       <div className="col-md-6 d-none" id="truckTypeDiv">
                         <label>Truck Type</label>
                         <select
-                          name="truck_type"
+                          name="sub_type"
                           className="form-control"
-                          value={formData.truck_type}
+                          value={formData?.sub_type}
                           onChange={handleChange}
                         >
                           <option value="">-- Select Truck Type --</option>
@@ -137,9 +168,9 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                       <div className="col-md-6 d-none" id="trailerTypeDiv">
                         <label>Trailer Type</label>
                         <select
-                          name="trailer_type"
+                          name="sub_type"
                           className="form-control"
-                          value={formData.trailer_type}
+                          value={formData?.sub_type}
                           onChange={handleChange}
                         >
                           <option value="">-- Select Trailer --</option>
@@ -154,9 +185,9 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                       <div className="col-md-6 d-none" id="forkliftTypeDiv">
                         <label>Forklift Type</label>
                         <select
-                          name="forklift_type"
+                          name="sub_type"
                           className="form-control"
-                          value={formData.forklift_type}
+                          value={formData?.sub_type}
                           onChange={handleChange}
                         >
                           <option value="">-- Select Equipment --</option>
@@ -200,7 +231,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                           <select
                             name="truck_ownership"
                             className="form-control"
-                            value={formData.truck_ownership}
+                            value={formData?.truck_ownership}
                             onChange={handleChange}
                             required
                           >
@@ -218,7 +249,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                             type="text"
                             name="model"
                             className="form-control"
-                            value={formData.model}
+                            value={formData?.model}
                             onChange={handleChange}
                           />
                         </div>
@@ -228,7 +259,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                             type="text"
                             name="capacity"
                             className="form-control"
-                            value={formData.capacity}
+                            value={formData?.capacity}
                             onChange={handleChange}
                           />
                         </div>
@@ -250,7 +281,7 @@ const EditTruckModal = ({showEdit, setShowEdit, handleEdit}) => {
                           <select
                             name="status"
                             className="form-control"
-                            value={formData.status}
+                            value={formData?.status}
                             onChange={handleChange}
                           >
                             <option value="active">Active</option>

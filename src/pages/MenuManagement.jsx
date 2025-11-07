@@ -1,106 +1,177 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Modal, Form, Table } from "react-bootstrap";
 import "./MenuManagement.css";
 import AddMenuModal from "../components/AddMenuModal";
 import EditMenuModal from "../components/EditMenuModal";
+import DataTable from "react-data-table-component";
+import useMenuStore from "../store/menuStore";
+import TableLoader from "../components/TableLoader";
 
 const MenuManagement = () => {
-  // Dummy Data
-  const [menus, setMenus] = useState([
-    {
-      id: 1,
-      title: "Dashboard",
-      url: "/dashboard",
-      role: "admin",
-      icon: "bi bi-speedometer2",
-      sort_order: 1,
-      parent_id: 0,
-      parent_title: "Top Level",
-      status: "Active",
-    },
-    {
-      id: 2,
-      title: "Users",
-      url: "/users",
-      role: "all",
-      icon: "bi bi-people",
-      sort_order: 2,
-      parent_id: 0,
-      parent_title: "Top Level",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      title: "Settings",
-      url: "/settings",
-      role: "admin",
-      icon: "bi bi-gear",
-      sort_order: 3,
-      parent_id: 0,
-      parent_title: "Top Level",
-      status: "Active",
-    },
-  ]);
+  const { allMenus, getMenuById, updateMenu, createMenu, loading, pagination, fetchAllMenus, deleteMenu } = useMenuStore();
+
 
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
 
   const [topLevelMenus, setTopLevelMenus] = useState(
-    menus.filter((menu) => menu.parent_id === 0)
+    allMenus.filter((menu) => menu.parentId == null)
   );
 
-  const handleDelete = (id) => {
-    if (window.confirm("Delete this menu?")) {
-      setMenus(menus.filter((menu) => menu.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await deleteMenu(id);
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  const handleAdd = (e) => {
+
+  const handlePencilClick = async (id) => {
+    try {
+      const menu = await getMenuById(id);
+      setEditData(menu);
+      setShowEdit(true);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    setTopLevelMenus(allMenus.filter((menu) => menu.parentId == null));
+  }, [allMenus]);
+
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    const newMenu = {
-      id: Date.now(),
-      title: e.target.title.value,
-      url: e.target.url.value,
-      role: e.target.role.value,
-      icon: e.target.icon.value,
-      sort_order: Number(e.target.sort_order.value),
-      parent_id: Number(e.target.parent_id.value),
-      parent_title: e.target.parent_id.value === "0" ? "Top Level" : "Parent",
-      status: e.target.role.value === "admin" ? "Active" : "Inactive",
-    };
-    setMenus([...menus, newMenu]);
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    console.log(data)
+    try {
+      await updateMenu(editData.id, {
+        title: data.title,
+        url: data.url,
+        icon: data.icon,
+        sort_order: data.sort_order,
+        parentId: data.parent_id,
+      });
+      setShowEdit(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const columns = [
+    {
+      name: "ID",
+      selector: (row) => row.id,
+      sortable: true,
+    },
+    {
+      name: "Name",
+      selector: (row) => row.title,
+      sortable: true,
+    },
+    {
+      name: "Url",
+      selector: (row) => row.url,
+      sortable: true,
+    },
+    {
+      name: "Icon",
+      selector: (row) => row.icon,
+      sortable: true,
+    },
+    {
+      name: "Order",
+      selector: (row) => row.sort_order,
+      sortable: true,
+    },
+    {
+      name: "Parent",
+      selector: (row) => row.parentId,
+      sortable: true,
+      cell: (row) => (
+        <span
+
+        >
+          {row.parentId == null ? "Top Level" : allMenus?.find((menu) => menu.id == row.parentId)?.title}
+        </span>
+      ),
+    },
+    // {
+    //   name: "Status",
+    //   selector: (row) => row.status,
+    //   sortable: true,
+    //   cell: (row) => (
+    //     <span
+    //       className={`status-badge ${
+    //         row.status === "Active" ? "active" : "inactive"
+    //       }`}
+    //     >
+    //       {row.status}
+    //     </span>
+    //   ),
+    // },
+    {
+      name: "Actions",
+      selector: (row) => row.actions,
+      sortable: true,
+      cell: (row) => (
+        <div className="d-flex gap-2">
+          <button
+            className="btn-action"
+            onClick={() => {
+              handlePencilClick(row.id)
+            }}
+          >
+            <i className="bi bi-pencil"></i>
+          </button>
+          <button
+            className="btn-action"
+            onClick={() => handleDelete(row.id)}
+          >
+            <i className="bi bi-trash"></i>
+          </button>
+        </div>
+      ),
+    },
+  ]
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      const newMenu = {
+        title: e.target.title.value,
+        url: e.target.url.value,
+        role: e.target.role.value,
+        icon: e.target.icon.value,
+        sort_order: Number(e.target.sort_order.value),
+        parentId: Number(e.target.parent_id.value),
+      };
+      await createMenu(newMenu)
+    } catch (error) {
+      console.log(error)
+    }
+
     setShowAdd(false);
   };
 
-  const handleEdit = (e) => {
-    e.preventDefault();
-    setMenus(
-      menus.map((menu) =>
-        menu.id === editData.id
-          ? {
-              ...menu,
-              title: e.target.title.value,
-              url: e.target.url.value,
-              role: e.target.role.value,
-              icon: e.target.icon.value,
-              sort_order: Number(e.target.sort_order.value),
-              parent_id: Number(e.target.parent_id.value),
-              parent_title:
-                e.target.parent_id.value === "0" ? "Top Level" : "Parent",
-              status: e.target.role.value === "admin" ? "Active" : "Inactive",
-            }
-          : menu
-      )
-    );
-    setShowEdit(false);
+  const handlePageChange = (page) => {
+    fetchAllMenus({ page });
   };
+
+  const handlePerRowsChange = (rowsPerPage) => {
+    fetchAllMenus({ limit: rowsPerPage });
+  };
+
 
   return (
     <div className="content">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="mb-0">Menu Management</h3>
+        <h3 className="mb-0">Menu Management</h3>
 
 
         <Button variant="primary" onClick={() => setShowAdd(true)}>
@@ -111,70 +182,20 @@ const MenuManagement = () => {
       {/* Table */}
       <div className="card shadow">
         <div className="table-responsive">
-          <Table className="table align-middle custom-table">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" />
-                </th>
-                <th>Menu Title</th>
-                <th>URL</th>
-                <th>Role</th>
-                <th>Icon</th>
-                <th>Order</th>
-                <th>Parent</th>
-                <th>Status</th>
-                <th className="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {menus.map((menu) => (
-                <tr key={menu.id}>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td className="fw-semibold">{menu.title}</td>
-                  <td>{menu.url}</td>
-                  <td>{menu.role}</td>
-                  <td>
-                    <i className={`${menu.icon} me-2 text-secondary`}></i>
-                  </td>
-                  <td>{menu.sort_order}</td>
-                  <td>{menu.parent_title}</td>
-                  <td>
-                    <span
-                      className={`status-badge ${
-                        menu.status === "Active"
-                          ? "active" : "inactive"
-                      }`}
-                    >
-                      {menu.status}
-                    </span>
-                  </td>
-                  <td className="text-end">
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={() => {
-                        setEditData(menu);
-                        setShowEdit(true);
-                      }}
-                    >
-                      <i className="bi bi-pencil"></i>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => handleDelete(menu.id)}
-                    >
-                      <i className="bi bi-trash"></i>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+
+          <DataTable
+            columns={columns}
+            data={allMenus}
+            pagination
+            paginationServer={true}
+            paginationTotalRows={pagination.totalItems}
+            paginationRowsPerPage={pagination.limit}
+            paginationRowsPerPageOptions={[5, 10, 20]}
+            onChangePage={handlePageChange}
+            onChangeRowsPerPage={handlePerRowsChange}
+            progressPending={loading}
+            progressComponent={<TableLoader />}
+          />
         </div>
       </div>
 
@@ -183,7 +204,7 @@ const MenuManagement = () => {
 
       {/* Edit Menu Modal */}
       {editData && (
-        <EditMenuModal showEdit={showEdit} setShowEdit={setShowEdit} handleEdit={handleEdit} editData={editData} topLevelMenus={topLevelMenus} />
+        <EditMenuModal showEdit={showEdit} setShowEdit={setShowEdit} handleEdit={handleEditSubmit} editData={editData} topLevelMenus={topLevelMenus} />
       )}
     </div>
   );

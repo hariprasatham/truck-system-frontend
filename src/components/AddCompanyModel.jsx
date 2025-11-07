@@ -7,7 +7,7 @@ const AddCompanyModal = ({ show, handleClose, handleSave }) => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    handleSave({ companyName, description });
+    handleSave({ company_name:companyName, description: description });
     setCompanyName("");
     setDescription("");
   };

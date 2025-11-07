@@ -4,17 +4,14 @@ import Loader from './Loader';
 import useUserStore from '../store/userStore';
 import useCompanyUsersStore from '../store/companyUsersStore';
 import useCompaniesStore from '../store/companiesStore';
+import useCompanyDriverStore from '../store/companyDriverStore';
 
-const GlobalLoader = () => {
-  const userGlobalLoading = useUserStore(state => state.globalLoading);
-  const companyUsersGlobalLoading = useCompanyUsersStore(state => state.globalLoading);
-  const companiesGlobalLoading = useCompaniesStore(state => state.globalLoading);
+const GlobalLoader = ({loading}) => {
 
-  const globalLoading = userGlobalLoading || companyUsersGlobalLoading || companiesGlobalLoading;
 
   // Prevent body scrolling when loader is active
   useEffect(() => {
-    if (globalLoading) {
+    if (loading) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -22,9 +19,9 @@ const GlobalLoader = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [globalLoading]);
+  }, [loading]);
 
-  if (!globalLoading) return null;
+  if (!loading) return null;
   
   return <Loader />;
 };

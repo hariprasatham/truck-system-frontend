@@ -6,9 +6,7 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
     truck_no: "",
     truck_brand: "",
     equipment_type: "",
-    truck_type: "",
-    trailer_type: "",
-    forklift_type: "",
+    sub_type: "",
     truck_ownership: "",
     model: "",
     capacity: "",
@@ -17,7 +15,7 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));  
   };
 
   // Dynamically handle visibility for type sections
@@ -42,8 +40,7 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("🚚 Submitted Equipment Data:", formData);
-    alert("Equipment added successfully (dummy submit)");
+    handleAdd(formData);
   };
 
   return (
@@ -122,9 +119,9 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
                       <div className="col-md-6 d-none" id="truckTypeDiv">
                         <label>Truck Type</label>
                         <select
-                          name="truck_type"
+                          name="sub_type"
                           className="form-control"
-                          value={formData.truck_type}
+                          value={formData.sub_type}
                           onChange={handleChange}
                         >
                           <option value="">-- Select Truck Type --</option>
@@ -137,9 +134,9 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
                       <div className="col-md-6 d-none" id="trailerTypeDiv">
                         <label>Trailer Type</label>
                         <select
-                          name="trailer_type"
+                          name="sub_type"
                           className="form-control"
-                          value={formData.trailer_type}
+                          value={formData.sub_type}
                           onChange={handleChange}
                         >
                           <option value="">-- Select Trailer --</option>
@@ -154,9 +151,9 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
                       <div className="col-md-6 d-none" id="forkliftTypeDiv">
                         <label>Forklift Type</label>
                         <select
-                          name="forklift_type"
+                          name="sub_type"
                           className="form-control"
-                          value={formData.forklift_type}
+                          value={formData.sub_type}
                           onChange={handleChange}
                         >
                           <option value="">-- Select Equipment --</option>

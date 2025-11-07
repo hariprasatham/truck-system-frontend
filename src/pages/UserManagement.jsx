@@ -60,7 +60,7 @@ const UserManagement = () => {
     },
     {
       name: "Created At",
-      selector: (row) => row.created_at,
+      selector: (row) => row.created_at ? new Date(row.created_at).toLocaleString() : "",
       sortable: true,
     },
     {
@@ -101,6 +101,13 @@ const UserManagement = () => {
             className="btn-action"
             onClick={() => handleViewDrivers(row.id, row.username)}
           >
+            <i className="bi bi-people"></i>
+          </button>
+          {/* View Trucks */}
+          <button
+            className="btn-action"
+            onClick={() => handleViewTrucks(row.id, row.username)}
+          >
             <i className="bi bi-truck"></i>
           </button>
         </>
@@ -133,6 +140,11 @@ const UserManagement = () => {
 
   };
 
+
+  const handleViewTrucks = (id, username) => {
+    navigate(`/companies/${companyId}/user-management/${id}/trucks`, { state: { username } });
+  };
+
   const handleToggleStatus = async (id) => {
     await changeUserActiveStatus(companyId, id)
     await fetchUsersByCompany(companyId)
@@ -144,7 +156,7 @@ const UserManagement = () => {
   };
 
   const handleViewDrivers = (id, username) => {
-    navigate(`/companies/1/user-management/${id}/drivers`, { state: { username } });
+    navigate(`/companies/${companyId}/user-management/${id}/drivers`, { state: { username } });
   };
 
   const handlePageChange = (page) => {

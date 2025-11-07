@@ -6,6 +6,7 @@ import CompanyCard from "../components/CompanyCard";
 import AddCompanyModal from "../components/AddCompanyModel";
 
 import useCompaniesStore from "../store/companiesStore";
+import GlobalLoader from "../components/GlobalLoader";
 
 
 // Example API fetch (replace with your API or props)
@@ -46,10 +47,12 @@ const fetchCompanies = async () => {
 const Companies = () => {
     const [showModal, setShowModal] = useState(false);
 
-  const {companies, fetchCompanies, createCompany} = useCompaniesStore();
+  const {companies, fetchCompanies, createCompany, loading} = useCompaniesStore();
 
-  const handleSave = (newCompany) => {
-    createCompany(newCompany);
+  const handleSave = async (newCompany) => {
+    console.log("newCompany", newCompany)
+   await createCompany(newCompany);
+   await fetchCompanies();
     setShowModal(false);
   };  
 
@@ -66,6 +69,10 @@ const Companies = () => {
     };
     loadCompanies();
   }, []);
+  
+    if (loading && !companies.length) {
+    return <GlobalLoader />;
+  }
 
   return (
     <div className="content">

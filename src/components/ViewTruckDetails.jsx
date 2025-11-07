@@ -1,6 +1,6 @@
 import React from 'react'
-import { Modal, Button, Spinner } from 'react-bootstrap';
-const ViewTruckDetails = ({open, onClose, truck}) => {
+import { Modal, Button, Spinner, Row, Col } from 'react-bootstrap';
+const ViewTruckDetails = ({ open, onClose, truck }) => {
 
   const handleClose = () => onClose();
 
@@ -12,14 +12,28 @@ const ViewTruckDetails = ({open, onClose, truck}) => {
       <Modal.Body>
         {truck ? (
           <div>
-            <p><strong>Truck No:</strong> {truck.truck_no}</p>
-            <p><strong>Brand:</strong> {truck.truck_brand}</p>
-            <p><strong>Type:</strong> {truck.truck_type}</p>
-            <p><strong>Trailer:</strong> {truck.trailer_type}</p>
-            <p><strong>Equipment:</strong> {truck.equipment_type}</p>
-            <p><strong>Model:</strong> {truck.model}</p>
-            <p><strong>Capacity:</strong> {truck.capacity}</p>
-            <p><strong>Status:</strong> {truck.status}</p>
+
+            <Row>
+              <InfoBox label="Truck No" value={truck.truck_no} />
+              <InfoBox label="Brand" value={truck.truck_brand} />
+              <InfoBox label="Sub Type" value={truck.sub_type} />
+              <InfoBox label="Model" value={truck.model} />
+            </Row>
+
+            <Row>
+              <InfoBox label="Status" value={truck.status} />
+              <InfoBox label="Ownership" value={truck.truck_ownership} />
+              <InfoBox label="User" value={truck.user.username} />
+              <InfoBox label="Company" value={truck.company.company_name} />
+            </Row>
+
+            <Row>
+              <InfoBox label="Equipment" value={truck.equipment_type} />
+              
+              <InfoBox label="Capacity" value={truck.capacity} />
+              <InfoBox label="Created At" value={truck.created_at ? new Date(truck.created_at).toLocaleDateString() : "-"} />
+              <InfoBox label="" value="" />
+            </Row>
           </div>
         ) : (
           <p>No data available.</p>
@@ -34,5 +48,13 @@ const ViewTruckDetails = ({open, onClose, truck}) => {
   )
 }
 
+
+const InfoBox = ({ label, value }) => (
+  <Col className="mb-3" >
+    <div className="fw-normal text-muted fs-6">{label}</div>
+    <div className="fw-semibold fs-6">{value || "-"}</div>
+  </Col>
+);
+
+
 export default ViewTruckDetails
-  

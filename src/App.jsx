@@ -27,6 +27,7 @@ import useMenuStore from "./store/menuStore";
 import useUserStore from "./store/userStore";
 import NotFound from "./pages/NotFound";
 import PublicRoute from "./components/PublicRoute";
+import DriverDetails from "./pages/DriverDetails";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
@@ -51,12 +52,16 @@ const App = () => {
               <Route path="/companies" element={<Companies />} />
               <Route path="/companies/:companyId/user-management" element={<UserManagement />} />
               <Route path="/companies/:companyId/user-management/:userId/drivers" element={<DriverList />} />
+              <Route path="/companies/:companyId/user-management/:userId/drivers/:driverId" element={<DriverDetails />} />
+              <Route path="/companies/:companyId/user-management/:userId/trucks" element={<TruckManagement />} />
+
+              <Route path="/driver-management" element={<DriverManagement />} />
               <Route path="/menu-management" element={<MenuManagement />} />
               <Route path="/truck-management" element={<TruckManagement />} />
               <Route path="/fuel-invoice-management" element={<FuelInvoiceManagement />} />
               <Route path="/view-fuel-data/:fuelId" element={<ViewFuelData />} />
               <Route path="/pre-employment-check" element={<PreEmploymentCheck />} />
-              <Route path="/drivers" element={<DriverManagement />} />
+              {/* <Route path="/drivers" element={<DriverManagement />} /> */}
               {/* <Route path="/profile" element={<Profile />} /> */}
             </Route>
           </Route>

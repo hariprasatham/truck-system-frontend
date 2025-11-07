@@ -3,7 +3,7 @@ import { Modal, Form, Button } from 'react-bootstrap';
 
 const AddMenuModal = ({ showAdd, setShowAdd, handleAdd, topLevelMenus }) => {
   return (
-    <Modal show={showAdd} onHide={() => setShowAdd(false)} top-centered>
+    <Modal show={showAdd} onHide={() => setShowAdd(false)} centered>
         <Form onSubmit={handleAdd}>
           <Modal.Header closeButton>
             <Modal.Title>Add New Menu</Modal.Title>

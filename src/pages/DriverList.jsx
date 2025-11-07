@@ -6,9 +6,10 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import useCompanyDriverStore from "../store/companyDriverStore";
 import TableLoader from "../components/TableLoader";
+import EditDriverModal from "../components/EditDriverModal";
 const DriverList = () => {
   // Dummy driver data
-  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver } = useCompanyDriverStore();
+  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver, pagination, currentDriver, clearCurrentDriver } = useCompanyDriverStore();
 
 
   const { companyId, userId } = useParams();
@@ -37,11 +38,13 @@ const DriverList = () => {
     canadian_hos: "70_7",
     us_hos: "70_8",
     yard_moves: true,
-    timezone : "",
+    timezone: "",
     personal_cmv: true,
-    
+
 
   });
+
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const columns = [
     {
@@ -76,7 +79,7 @@ const DriverList = () => {
           className={`status-badge ${row.status === "active" ? "active" : "inactive"
             }`}
         >
-          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+          {row?.status?.charAt(0)?.toUpperCase() + row?.status?.slice(1)}
         </span>
       ),
     },
@@ -122,6 +125,13 @@ const DriverList = () => {
             <i className="bi bi-pencil"></i>
           </button>
 
+          <button
+            className="btn-action"
+            onClick={() => handleViewDriver(row.id)}
+          >
+            <i className="bi bi-eye"></i>
+          </button>
+
           {/* Delete (except admin) */}
           <button
             className="btn-action"
@@ -152,36 +162,95 @@ const DriverList = () => {
   };
 
   const handleEditDriver = async (id) => {
-    await fetchDriverById(id)
+    try {
+      // Clear any previous driver data first
+      clearCurrentDriver();
+
+      // Fetch the driver data and wait for it to complete
+      const response = await fetchDriverById(id);
+
+      // Use the response data directly instead of relying on store state
+      if (response) {
+        setNewDriver(response);
+        setShowEditModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching driver:', error);
+      // Optionally show an error message to the user
+      toast.error('Failed to load driver data');
+    }
+  };
+
+
+  const handleUpdateDriver = async () => {
+    await updateDriver(newDriver.id, newDriver)
     await fetchDriversByCompany(companyId, userId)
-  };
-
-
-  // Handle input change for new driver
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewDriver((prev) => ({ ...prev, [name]: value }));
-  };
+    setShowEditModal(false)
+    setNewDriver({
+      first_name: "",
+      last_name: "",
+      license: "",
+      expiry_date: "",
+      company_id: companyId,
+      user_id: userId,
+      dispatcher: "driver",
+      status: "active",
+      phone: "",
+      email: "",
+      state: "",
+      country: "",
+      canadian_hos: "70_7",
+      us_hos: "70_8",
+      yard_moves: true,
+      timezone: "",
+      personal_cmv: true,
+    })
+  }
 
   // Add new driver locally
-  const handleAddDriver = () => {
+  const handleAddDriver = async () => {
 
-    addDriver(newDriver)
-    
+    await addDriver(newDriver)
+    await fetchDriversByCompany(companyId, userId)
+
     setNewDriver({
-      name: "",
+      first_name: "",
+      last_name: "",
       license: "",
-      phone: "",
-      truck_no: "",
+      expiry_date: "",
+      company_id: companyId,
+      user_id: userId,
+      dispatcher: "driver",
       status: "active",
+      phone: "",
       email: "",
-      address: "",
+      state: "",
+      country: "",
+      canadian_hos: "70_7",
+      us_hos: "70_8",
+      yard_moves: true,
+      timezone: "",
+      personal_cmv: true,
+
     });
     setShowAddModal(false);
   };
 
+
+  const handlePageChange = (page) => {
+    fetchDriversByCompany(companyId, userId, page)
+  };
+
+  const handlePerRowsChange = (rowsPerPage) => {
+    fetchDriversByCompany(companyId, userId, 1, rowsPerPage)
+  };
+
+  const handleViewDriver = async (id) => {
+        navigate(`/companies/${companyId}/user-management/${userId}/drivers/${id}`);
+
+  }
   return (
-    <div className="container my-4">
+    <div className="content my-4">
       {/* Header Section */}
       <div className="d-flex justify-content-between mb-3 align-items-center">
         <h3>
@@ -209,7 +278,16 @@ const DriverList = () => {
 
         <div className="card-body p-0">
           <div className="table-responsive">
-            <DataTable columns={columns} data={drivers} pagination />
+            <DataTable columns={columns} data={drivers} pagination
+              paginationServer={true}
+              paginationTotalRows={pagination.total}
+              paginationRowsPerPage={pagination.limit}
+              paginationRowsPerPageOptions={[5, 10, 20]}
+              onChangePage={handlePageChange}
+              onChangeRowsPerPage={handlePerRowsChange}
+              progressPending={loading}
+              progressComponent={<TableLoader />}
+            />
             {/* <Table className="custom-table">
                 <thead>
                   <tr>
@@ -263,10 +341,17 @@ const DriverList = () => {
         setShowAddModal={setShowAddModal}
         newDriver={newDriver}
         setNewDriver={setNewDriver}
-        handleChange={handleChange}
         handleAddDriver={handleAddDriver}
-        progressPending={loading}
-        progressComponent={<TableLoader />}
+      />
+
+      {/* Edit Driver Modal */}
+      <EditDriverModal
+        showEditModal={showEditModal}
+        setShowEditModal={setShowEditModal}
+        newDriver={newDriver}
+        setNewDriver={setNewDriver}
+        handleEditDriver={handleUpdateDriver}
+        loading={loading}
       />
     </div>
   );

@@ -35,11 +35,14 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
   };
 
   const handleSave = async () => {
-    console.log(`✅ Menus assigned to User ${userId}:`, selectedMenus);
-    await updateUserMenus(userId, selectedMenus);
-    if (!error) {
-      onClose();
-      setSelectedMenus([]);
+    try {
+      await updateUserMenus(userId, selectedMenus);
+      if (!error) {
+        onClose();
+        setSelectedMenus([]);
+      }
+    } catch (error) {
+      console.error('Error updating user menus:', error);
     }
   };
 

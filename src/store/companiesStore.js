@@ -1,6 +1,8 @@
 // src/store/companiesStore.js
 import { create } from 'zustand';
 import api from '../API/api';
+import toast from "react-hot-toast";
+
 
 const useCompaniesStore = create((set, get) => ({
   // State
@@ -57,12 +59,13 @@ const useCompaniesStore = create((set, get) => ({
   createCompany: async (companyData) => {
     set({ loading: true, error: null, globalLoading: true });
     try {
-      const response = await api.post('/company', companyData);
+      const response = await api.post('/company/register', companyData);
       set(state => ({
         companies: [response.data, ...state.companies],
         loading: false,
         globalLoading: false,
       }));
+      toast.success("Company created successfully");
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to create company';
