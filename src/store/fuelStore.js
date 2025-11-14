@@ -10,6 +10,7 @@ const useFuelStore = create((set, get) => ({
     trucks: [],
     loading: false,
     error: null,
+    timeoutId: null,
     pagination: {
         page: 1,
         limit: 10,
@@ -28,12 +29,14 @@ const useFuelStore = create((set, get) => ({
                     ...filters,
                 },
             });
-            set({ fuelInvoices: response.data.results.fuels, pagination: {
-                page: response.data.results.pagination.currentPage,
-                limit: response.data.results.pagination.itemsPerPage,
-                total: response.data.results.pagination.totalItems,
-                totalPages: response.data.results.pagination.totalPages,
-            }, loading: false });
+            set({
+                fuelInvoices: response.data.results.fuels, pagination: {
+                    page: response.data.results.pagination.currentPage,
+                    limit: response.data.results.pagination.itemsPerPage,
+                    total: response.data.results.pagination.totalItems,
+                    totalPages: response.data.results.pagination.totalPages,
+                }, loading: false
+            });
         } catch (error) {
             console.error("Error fetching fuel invoices:", error);
             set({ error: "Failed to fetch fuel invoices", loading: false });
@@ -89,13 +92,20 @@ const useFuelStore = create((set, get) => ({
         set({ loading: true, error: null, spinnerMessage: "Uploading fuel sheet..." });
         try {
             const response = await api.post("/fuel/uploadFuelSheet", formData);
+            if (!response?.data?.results?.jobId || !response?.data?.results?.fuelRecordId) {
+                throw new Error("Invalid response from server");
+            }
             set({ spinnerMessage: "Checking fuel sheet status..." });
             console.log("Fuel Record ID: ", response.data.results.fuelRecordId);
             get().checkFuelSheetStatus(response.data.results.jobId, response.data.results.fuelRecordId);
             return response.data;
         } catch (error) {
             console.error("Error uploading fuel invoice:", error);
-            set({ error: "Failed to upload fuel invoice", loading: false });
+            set({
+                error: error.response?.data?.message || "Failed to upload fuel invoice",
+                loading: false,
+                spinnerMessage: ""
+            });
         }
     },
 
@@ -104,23 +114,36 @@ const useFuelStore = create((set, get) => ({
         try {
             console.log("Fuel Record ID status: ", fuelRecordId);
             const response = await api.get(`/fuel/getFuelSheetStatus/${jobId}`);
-            if(response.data.results.jobStatus != "SUCCEEDED" && response.data.results.jobStatus != "FAILED"){
-                setTimeout(() => {
+            // if (response.data.results.jobStatus != "SUCCEEDED" && response.data.results.jobStatus != "FAILED") {
+            //     setTimeout(() => {
+            //         get().checkFuelSheetStatus(jobId, fuelRecordId);
+            //     }, 5000);
+            // } else {
+            //     set({ spinnerMessage: "Processing fuel sheet..." });
+            //     get().processFuelSheetResults(jobId, fuelRecordId);
+            // }
+
+            if (response.data.results.jobStatus === "SUCCEEDED" ||
+                response.data.results.jobStatus === "FAILED") {
+                set({ spinnerMessage: "Processing fuel sheet...", timeoutId: null });
+                await get().processFuelSheetResults(jobId, fuelRecordId);
+            } else {
+                const newTimeoutId = setTimeout(() => {
                     get().checkFuelSheetStatus(jobId, fuelRecordId);
                 }, 5000);
-            }else{
-                set({ spinnerMessage: "Processing fuel sheet..." });
-                get().processFuelSheetResults(jobId, fuelRecordId);
+                set({ timeoutId: newTimeoutId });
             }
+
             // return response.data;
         } catch (error) {
             console.error("Error checking fuel sheet status:", error);
             set({ error: "Failed to check fuel sheet status", loading: false });
         }
+
     },
 
     processFuelSheetResults: async (jobId, fuelRecordId) => {
-        set({error: null, spinnerMessage: "Processing fuel sheet..." });
+        set({ error: null, spinnerMessage: "Processing fuel sheet..." });
         try {
             const response = await api.get(`/fuel/getFuelSheetResults/${jobId}`, {
                 params: {
@@ -128,13 +151,25 @@ const useFuelStore = create((set, get) => ({
                 }
             });
             get().getAllFuelInvoices();
-            set({ loading: false , error: null, spinnerMessage: ""});
+            set({ loading: false, error: null, spinnerMessage: "" });
             return response.data;
         } catch (error) {
             console.error("Error processing fuel sheet:", error);
             set({ error: "Failed to process fuel sheet", loading: false });
         }
     },
+
+    cleanup: () => {
+        try {
+            const { timeoutId } = get();
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                set({ timeoutId: null });
+            }
+        } catch (error) {
+            console.error("Error during cleanup:", error);
+        }
+    }
 
 
 

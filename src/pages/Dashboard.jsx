@@ -1,9 +1,36 @@
-import React from "react";
+import React, { useState, useEffect} from "react";
 import "./Dashboard.css";
+import axios from "axios";
 import MonthlyDeliveriesChart from "../components/MonthlyDeliveriesChart";
 import DashboardCard from "../components/DashboardCard";
 
 const Dashboard = () => {
+  
+  const [counts, setCounts] = useState({});
+  const [role, setRole] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardCounts = async () => {
+      try {
+        const token = localStorage.getItem("access_token"); // JWT stored after login
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/auth/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.data.success) {
+          setCounts(res.data.data);
+          setRole(res.data.role);
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardCounts();
+  }, []);
+
   return (
     <div className="content">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -14,37 +41,42 @@ const Dashboard = () => {
         <DashboardCard
           icon="bi-truck"
           title="Total Trucks"
-          value="4"
+          value={counts.trucks || 0}
           color="text-success"
         />
         <DashboardCard
           icon="bi-person-badge"
           title="Active Drivers"
-          value="5"
+          value={counts.drivers || 0}
           color="text-primary"
         />
-        <DashboardCard
-          icon="bi-people"
-          title="Total Users"
-          value="6"
-          color="text-warning"
-        />
-        <DashboardCard
-          icon="bi-building"
-          title="Total Companies"
-          value="2"
-          color="text-danger"
-        />
+        {/* Admin-only cards */}
+        {role === "admin" && (
+          <>
+            <DashboardCard
+              icon="bi-people"
+              title="Total Users"
+              value={counts.users || 0}
+              color="text-warning"
+            />
+            <DashboardCard
+              icon="bi-building"
+              title="Total Companies"
+              value={counts.companies || 0}
+              color="text-danger"
+            />
+          </>
+        )}
         <DashboardCard
           icon="bi-bar-chart"
           title="Total Fuel Quantity"
-          value="1000.00 L"
+          value={counts.totalQuantity || 0}
           color="text-info"
         />
         <DashboardCard
           icon="bi-currency-rupee"
           title="Total Final Amount"
-          value="₹50000.00"
+          value={counts.totalAmount || 0}
           color="text-success"
         />
       </div>

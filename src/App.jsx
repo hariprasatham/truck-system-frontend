@@ -30,6 +30,8 @@ import PublicRoute from "./components/PublicRoute";
 import DriverDetails from "./pages/DriverDetails";
 import PreEmploymentApplicationList from "./pages/PreEmploymentApplicationList";
 
+import ErrorBoundary from "./components/ErrorBoundary";
+
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
 
@@ -37,6 +39,7 @@ const App = () => {
   return (
     <>
       {/* <GlobalLoader /> */}
+      <ErrorBoundary>
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -72,6 +75,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
+      </ErrorBoundary>
     </>
   );
 };

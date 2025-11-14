@@ -1,0 +1,17 @@
+.error-boundary {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+.error-boundary-content {
+  background: #fff8f8;
+  border-left: 4px solid #ff3333;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.error-actions {
+  margin-top: 20px;
+}

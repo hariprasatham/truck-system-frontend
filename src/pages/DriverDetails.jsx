@@ -33,7 +33,7 @@ const DriverDetails = () => {
 
   // /companies/:companyId/user-management/:userId/drivers/:driverId
   const { companyId, userId, driverId } = useParams()   
-
+const [fileKey, setFileKey] = useState(Date.now());
   const { fetchDriverById, uploadMedicalReport, downloadMedicalReport, downloadLicense, loading, uploadDriverLicense } = useCompanyDriverStore()
 
 
@@ -111,12 +111,6 @@ const DriverDetails = () => {
     }
   };
 
-
-
-
-
-
-
   const handleDrugTestPDFUpload = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -125,19 +119,24 @@ const DriverDetails = () => {
     await uploadMedicalReport(driverId, formData)
     const driverData = await fetchDriverById(driverId)
     setDriver(driverData)
+    setMedicalReport(null);
+    setFileKey(Date.now());
   };
 
   const handleDriverLicenseUpload = async (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("licenseDocument", driverLicense);
-    formData.append("province", province);
+    //formData.append("province", province);
     formData.append("driverId", driverId);
     formData.append("companyId", companyId);
 
     await uploadDriverLicense(formData)
     const driverData = await fetchDriverById(driverId)
     setDriver(driverData)
+    setDriverLicense(null);
+    setFileKey(Date.now());
+    setProvince(null);
   };
 
   const handleProvinceChange = (e) => {
@@ -221,13 +220,50 @@ const DriverDetails = () => {
                 </Row>
                 <Row>
                   <InfoBox label="height" value={driver?.licenses?.[0]?.height} />
-                  <InfoBox label="Eyes Color" value={driver?.licenses?.[0]?.eye_color} />
+                  <InfoBox label="Province" value={driver?.licenses?.[0]?.state} />
                   <InfoBox label="view" value={driver?.licenses?.[0]?.license_image} handleDownloadLicense={handleDownloadLicense} />
                   <InfoBox label="" value={""} />
                 </Row>
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
+          <hr />
+          <h5>
+            <i className="bi bi-file-pdf" /> Upload Driver License
+          </h5>
+
+          <Form onSubmit={handleDriverLicenseUpload} className="mt-3 row g-3 align-items-center">
+            <input type="hidden" name="driver_id" value={driverId} />
+            <Col md={8}>
+              <Form.Control
+              key={fileKey}
+                type="file"
+                name="pdf_file"
+                onChange={(e) => setDriverLicense(e.target.files[0])}
+                required
+              />
+            </Col>
+            {/* <Col md={4}>
+              <Form.Select aria-label="Default select example" onChange={handleProvinceChange}>
+                <option>Select the province</option>
+                <option value="Alberta">Alberta</option>
+                <option value="British Columbia">British Columbia</option> 
+                <option value="Manitoba">Manitoba</option>
+                <option value="NewfoundlandandLabrador">Newfoundland and Labrador</option>
+                <option value="NovaScotia">Nova Scotia</option>
+                <option value="Ontario">Ontario</option>
+                <option value="PrinceEdwardIsland">Prince Edward Island</option>
+                <option value="Quebec">Quebec</option>
+                <option value="NewBrunswick">New Brunswick</option>
+                <option value="Saskatchewan">Saskatchewan</option>
+              </Form.Select>
+            </Col> */}
+            <Col md={4} className="d-grid">
+              <Button variant="success" type="submit">
+                <i className="bi bi-upload" /> Upload PDF
+              </Button>
+            </Col>
+          </Form>
           <hr />
           <h5>
             <i className="bi bi-file-pdf" /> Upload Drug Test PDF
@@ -237,6 +273,7 @@ const DriverDetails = () => {
             <input type="hidden" name="driver_id" value={driverId} />
             <Col md={8}>
               <Form.Control
+              key={fileKey}
                 type="file"
                 name="pdf_file"
                 accept="application/pdf"
@@ -251,41 +288,6 @@ const DriverDetails = () => {
             </Col>
           </Form>
           <hr />
-          <h5>
-            <i className="bi bi-file-pdf" /> Upload Driver License
-          </h5>
-
-          <Form onSubmit={handleDriverLicenseUpload} className="mt-3 row g-3 align-items-center">
-            <input type="hidden" name="driver_id" value={driverId} />
-            <Col md={4}>
-              <Form.Control
-                type="file"
-                name="pdf_file"
-                onChange={(e) => setDriverLicense(e.target.files[0])}
-                required
-              />
-            </Col>
-            <Col md={4}>
-              <Form.Select aria-label="Default select example" onChange={handleProvinceChange}>
-                <option>Select the province</option>
-                <option value="Alberta">Alberta</option>
-                {/* <option value="British Columbia">British Columbia</option> */}
-                <option value="Manitoba">Manitoba</option>
-                <option value="Newfoundland and Labrador">Newfoundland and Labrador</option>
-                <option value="Nova Scotia">Nova Scotia</option>
-                <option value="Ontario">Ontario</option>
-                <option value="Prince Edward Island">Prince Edward Island</option>
-                <option value="Quebec">Quebec</option>
-                <option value="New Brunswick">New Brunswick</option>
-                {/* <option value="Saskatchewan">Saskatchewan</option> */}
-              </Form.Select>
-            </Col>
-            <Col md={4} className="d-grid">
-              <Button variant="success" type="submit">
-                <i className="bi bi-upload" /> Upload PDF
-              </Button>
-            </Col>
-          </Form>
 
           {driver?.drug_test_pdf && (
             <div className="mt-3">

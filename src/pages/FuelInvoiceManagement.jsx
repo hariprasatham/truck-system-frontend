@@ -18,12 +18,16 @@ const FuelInvoiceManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const formRef = useRef(null);
 
-  const { getAllFuelInvoices, fuelInvoices, trucks, fetchAllTrucksForFuelInvoice, downloadFuelInvoice, uploadFuelSheet, loading, spinnerMessage, pagination } = useFuelStore();
+  const { getAllFuelInvoices, fuelInvoices, trucks, fetchAllTrucksForFuelInvoice, downloadFuelInvoice, uploadFuelSheet, loading, spinnerMessage, pagination, timeoutId, cleanup } = useFuelStore();
 
 
   useEffect(() => {
     fetchAllTrucksForFuelInvoice();
     getAllFuelInvoices();
+
+    return () => {
+      cleanup();
+    };
   }, []);
 
   const navigate = useNavigate();
@@ -170,6 +174,10 @@ const FuelInvoiceManagement = () => {
 
   // 🔍 Search + Date range filtering
   const filteredData = useMemo(() => {
+    if(!fuelInvoices){
+      return [];
+    }
+
     return fuelInvoices.filter((item) => {
       const matchSearch =
         item?.truck_no?.toLowerCase().includes(searchText.toLowerCase()) ||

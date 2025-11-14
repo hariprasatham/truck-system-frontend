@@ -1,13 +1,10 @@
-import React, { useState } from 'react'
-import { Modal, Button, Form, Accordion, Row, Col, Alert } from 'react-bootstrap'
-
-import useCompanyDriverStore from '../store/companyDriverStore'
+import React, { useState } from 'react';
+import { Modal, Button, Form, Accordion, Row, Col, Alert } from 'react-bootstrap';
+import useCompanyDriverStore from '../store/companyDriverStore';
 
 const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver, handleAddDriver }) => {
 
   const { loading, error } = useCompanyDriverStore();
-
-
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -17,16 +14,18 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
   const onChange = (e) => {
     //some fields are boolean, select, normal input, date
     const { name, value } = e.target;
-
     if (name === "yard_moves" || name === "personal_cmv") {
       setNewDriver((prev) => ({ ...prev, [name]: !prev[name] }));
     } else {
       setNewDriver((prev) => ({ ...prev, [name]: value }));
     }
-
-
   };
 
+  const stateOptions = {
+    India: ["Maharashtra", "Tamil Nadu", "Karnataka", "Gujarat"],
+    USA: ["California", "Texas", "New York", "Florida"],
+    Canada: ["Ontario", "Quebec", "British Columbia", "Alberta", "Prince Edward"],
+  };
 
   return (
     <Modal
@@ -39,7 +38,7 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
     >
       <Modal.Header closeButton>
         <Modal.Title className="fw-bold text-success">
-          <i className="bi bi-pencil"></i> Edit Driver
+          <i className="bi bi-pencil"></i> Add Driver
         </Modal.Title>
       </Modal.Header>
 
@@ -131,7 +130,7 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
                     </Form.Select>
                   </Col>
                   <Col md={6} lg={3}>
-                    <Form.Select
+                    {/* <Form.Select
                       name="state"
                       size="sm"
                       value={newDriver?.state}
@@ -142,6 +141,18 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
                       <option>Maharashtra</option>
                       <option>Ontario</option>
                       <option>California</option>
+                    </Form.Select> */}
+                    <Form.Select
+                      name="state"
+                      size="sm"
+                      value={newDriver?.state}
+                      onChange={onChange}
+                      required
+                    >
+                      <option value="">Select State / Province</option>
+                      {stateOptions[newDriver?.country]?.map((state) => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
                     </Form.Select>
                   </Col>
                   <Col md={6} lg={3}>

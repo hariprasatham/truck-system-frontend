@@ -147,7 +147,7 @@ const ViewFuelData = () => {
 
   return (
     <div className="container content mt-4">
-      <h2 className="mb-4 text-success ms-3">Fuel Data by Driver and Location</h2>
+      <h2 className="mb-4 text-success ms-3">Fuel Data by Location</h2>
 
       {/* --- Filter Section --- */}
       <div className="row mb-3 align-items-center">
@@ -208,7 +208,7 @@ const ViewFuelData = () => {
             onRowExpandToggled={handleRowExpandToggled}
             expandableRowDisabled={row => !row.records || row.records.length === 0}
             expandableRowsHideExpander={false}
-            pagination
+            // pagination
             // striped
             highlightOnHover
             customStyles={customStyles}
