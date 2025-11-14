@@ -306,12 +306,12 @@ const DriverManagement = () => {
       </div>
 
       {/* Drivers Table */}
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border">
         <div className="card-header bg-white d-flex justify-content-between align-items-center">
           <h5 className="mb-0 fw-bold">Drivers</h5>
         </div>
 
-        <div className="card-body p-0">
+        <div className="card-body p-0 rounded-3 overflow-hidden">
           <div className="table-responsive">
             <DataTable columns={columns} data={drivers} pagination
               paginationServer={true}

@@ -204,13 +204,13 @@ const UserManagement = () => {
         </div>
       </div>
 
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border">
         <div className="card-header bg-white d-flex justify-content-between align-items-center">
           <h5 className="mb-0 fw-bold">User Management</h5>
         </div>
 
-        <div className="card-body p-0">
-          <div className="table-responsive">
+        <div className="card-body p-0 rounded-3 overflow-hidden">
+          <div className="">
             <DataTable
               columns={columns}
               data={users}

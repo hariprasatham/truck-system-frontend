@@ -284,6 +284,9 @@ const FuelInvoiceManagement = () => {
           />
         </div>
       </div>
+            <div className="card shadow-sm">
+        <div className="card-body p-0 rounded-3 overflow-hidden">
+
 
       {/* DataTable */}
       <DataTable
@@ -300,6 +303,8 @@ const FuelInvoiceManagement = () => {
         onChangePage={handlePageChange}
         onChangeRowsPerPage={handlePerRowsChange}
       />
+      </div>
+      </div>
 
       <FuelInvoiceModal show={showModal} onClose={() => setShowModal(false)} invoice={selectedInvoice} />
       <GlobalLoader loading={loading} message={spinnerMessage} />

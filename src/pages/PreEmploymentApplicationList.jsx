@@ -147,8 +147,8 @@ const handleCancelDelete = () => {
       </div>
 
       {/* Table */}
-      <div className="card shadow">
-        <div className="table-responsive">
+      <div className="card">
+        <div className="card-body p-0 rounded-3 overflow-hidden">
 
           <DataTable
             columns={columns}
