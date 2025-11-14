@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url("4.png") no-repeat center center / cover;
+  /* background: url("/public/images/4.png") no-repeat center center / cover; */
   font-family: "Segoe UI", sans-serif;
   position: relative;
 }

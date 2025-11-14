@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import useUserStore from '../store/userStore';
+import backgroundImage from '../assets/img/4.png';
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -29,7 +30,9 @@ const Login = () => {
   };
 
   return (
-    <div className="login-body-container">
+    <div className="login-body-container" style={{ 
+  background: `url(${backgroundImage}) no-repeat center center / cover` 
+}}>
 
 <div className="container-fluid">
   <div className="app-features">

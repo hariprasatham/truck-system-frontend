@@ -28,6 +28,7 @@ import useUserStore from "./store/userStore";
 import NotFound from "./pages/NotFound";
 import PublicRoute from "./components/PublicRoute";
 import DriverDetails from "./pages/DriverDetails";
+import PreEmploymentApplicationList from "./pages/PreEmploymentApplicationList";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
@@ -60,7 +61,8 @@ const App = () => {
               <Route path="/truck-management" element={<TruckManagement />} />
               <Route path="/fuel-invoice-management" element={<FuelInvoiceManagement />} />
               <Route path="/view-fuel-data/:fuelId" element={<ViewFuelData />} />
-              <Route path="/pre-employment-check" element={<PreEmploymentCheck />} />
+              <Route path="/pre-employment-application/form" element={<PreEmploymentCheck />} />
+              <Route path="/pre-employment-application" element={<PreEmploymentApplicationList />} />
               {/* <Route path="/drivers" element={<DriverManagement />} /> */}
               {/* <Route path="/profile" element={<Profile />} /> */}
             </Route>

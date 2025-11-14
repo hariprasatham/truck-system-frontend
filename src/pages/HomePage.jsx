@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import "./HomePage.css";
 import { Link } from "react-router-dom";
+import homeBackground from "../assets/img/3.png";
 
 const HomePage = () => {
   useEffect(() => {
@@ -33,14 +34,16 @@ const HomePage = () => {
 
   return (
     <div className="homepage-container">
-      <header className="hero">
+      <header className="hero" style={{ 
+  background: `url(${homeBackground}) no-repeat center center / cover` 
+}}>
         <div className="top-bar">
           <Link to="/login" className="login-btn">
             Login
           </Link>
         </div>
         <div className="hero-content">
-          <h1>Streamline Your Trucking Operations</h1>
+          <h1 style={{color: "white"}}>Streamline Your Trucking Operations</h1>
           <p>
             Manage drivers, assign trucks, generate invoices, and track
             incidents — all from one powerful dashboard.

@@ -278,7 +278,8 @@ const DriverList = () => {
 
         <div className="card-body p-0">
           <div className="table-responsive">
-            <DataTable columns={columns} data={drivers} pagination
+            <DataTable columns={columns} data={drivers} 
+            pagination
               paginationServer={true}
               paginationTotalRows={pagination.total}
               paginationRowsPerPage={pagination.limit}

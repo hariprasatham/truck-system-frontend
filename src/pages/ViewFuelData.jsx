@@ -1,55 +1,59 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import DataTable from "react-data-table-component";
-
-  const groupedData = [
-    { driver: "John Doe", quantity: 50.5, location_name: "Station A", count: 3 },
-    { driver: "Jane Smith", quantity: 30.0, location_name: "Station B", count: 2 },
-    { driver: "Mike Johnson", quantity: 20.75, location_name: "Station A", count: 1 },
-    { driver: "Emily Davis", quantity: 40.0, location_name: "Station C", count: 4 },
-    { driver: "David Wilson", quantity: 25.5, location_name: "Station B", count: 2 },
-    { driver: "Sarah Brown", quantity: 35.0, location_name: "Station C", count: 3 },
-    { driver: "Chris Lee", quantity: 45.25, location_name: "Station A", count: 5 },
-    { driver: "Anna Garcia", quantity: 15.0, location_name: "Station B", count: 1 },
-    { driver: "James Martinez", quantity: 55.0, location_name: "Station C", count: 4 },
-    { driver: "Laura Rodriguez", quantity: 28.5, location_name: "Station A", count: 2 },
-    { driver: "Daniel Hernandez", quantity: 32.0, location_name: "Station B", count: 3 },
-    { driver: "Olivia Lopez", quantity: 22.75, location_name: "Station C", count: 2 },
-    // Add more sample data as needed
-  ];
-
-  const locationNames = [...new Set(groupedData.map((item) => item.location_name))];
+import useFuelStore from '../store/fuelStore'
+import { useParams } from 'react-router-dom';
 
 
 const ViewFuelData = () => {
-     const [selectedLocation, setSelectedLocation] = useState("");
-     // --- Filter data by selected location ---
-  const filteredData = useMemo(() => {
-    if (!selectedLocation) return groupedData;
-    return groupedData.filter((row) => row.location_name === selectedLocation);
-  }, [selectedLocation, groupedData]);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const { currentFuelInvoice, getFuelInvoiceById } = useFuelStore();
+  const { fuelId } = useParams();
+  const [expandedRows, setExpandedRows] = useState({});
+
+
+
+  useEffect(() => {
+    getFuelInvoiceById(fuelId);
+  }, [fuelId]);
+
+  const locationNames = [...new Set(currentFuelInvoice?.map((item) => item.province))];
+
+  // Toggle row expanded state
+  const handleRowExpandToggled = (toggled) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [toggled.province]: !prev[toggled.province]
+    }));
+  };
 
 
   // --- Define columns for react-data-table-component ---
   const columns = [
+    // {
+    //   name: "Driver",
+    //   selector: (row) => row.driver,
+    //   sortable: true,
+    // },
     {
-      name: "Driver",
-      selector: (row) => row.driver,
+      name: "State",
+      selector: (row) => row.state_name + " - " + row.province,
       sortable: true,
     },
     {
-      name: "Petrol Quantity",
-      selector: (row) => (row.quantity * 3).toFixed(2),
+      name: "Country",
+      selector: (row) => row.country_name,
+      sortable: true,
+    },
+    {
+      name: "Gas Quantity",
+      selector: (row) => (row.total_qty).toFixed(3),
       sortable: true,
       right: true,
     },
-    {
-      name: "Location Name",
-      selector: (row) => row.location_name,
-      sortable: true,
-    },
+
     {
       name: "Total Quantity",
-      selector: (row) => row.quantity.toFixed(1),
+      selector: (row) => parseFloat(row.total_final_amount).toFixed(3),
       sortable: true,
       right: true,
     },
@@ -65,9 +69,10 @@ const ViewFuelData = () => {
   const customStyles = {
     headCells: {
       style: {
-        backgroundColor: "#f8f9fa",
+        // backgroundColor: "#f8f9fa",
         fontWeight: "bold",
         fontSize: "13px",
+        
       },
     },
     cells: {
@@ -77,8 +82,71 @@ const ViewFuelData = () => {
     },
   };
 
+  // Child columns
+  const childColumns = [
+    {
+      name: "Date",
+      selector: (row) => row.date,
+      sortable: true,
+      width: '120px'
+    },
+    {
+      name: "Quantity",
+      selector: (row) => parseFloat(row.qty).toFixed(2),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Amount",
+      selector: (row) => parseFloat(row.final_amount).toFixed(2),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Unit Price",
+      selector: (row) => (row.final_amount / row.qty).toFixed(2),
+      sortable: true,
+      right: true,
+    }
+  ];
+
+  // Custom expandable component
+  const ExpandableComponent = ({ data }) => (
+    <div className="p-3 bg-light">
+      <h6 className="mb-3">Fuel Entries for {data.state_name} - {data.province}</h6>
+      <DataTable
+        columns={childColumns}
+        data={data.records}
+        customStyles={{
+          headCells: {
+            style: {
+              backgroundColor: "#e9ecef",
+              fontSize: "12px",
+            },
+          },
+          cells: {
+            style: {
+              fontSize: "12px",
+            },
+          },
+        }}
+        dense
+        noHeader
+      />
+    </div>
+  );
+
+
+  // Filter data based on selected location
+  const filteredData = useMemo(() => {
+    if (!selectedLocation || !currentFuelInvoice) return currentFuelInvoice || [];
+    return currentFuelInvoice.filter(item => item.province === selectedLocation);
+  }, [currentFuelInvoice, selectedLocation]);
+
+
+
   return (
-     <div className="container content mt-4">
+    <div className="container content mt-4">
       <h2 className="mb-4 text-success ms-3">Fuel Data by Driver and Location</h2>
 
       {/* --- Filter Section --- */}
@@ -94,7 +162,7 @@ const ViewFuelData = () => {
             onChange={(e) => setSelectedLocation(e.target.value)}
           >
             <option value="">All Locations</option>
-            {locationNames.map((loc, index) => (
+            {locationNames?.map((loc, index) => (
               <option key={index} value={loc}>
                 {loc}
               </option>
@@ -113,9 +181,9 @@ const ViewFuelData = () => {
       </div>
 
       {/* --- React Data Table --- */}
-      <DataTable
+      {/* <DataTable
         columns={columns}
-        data={filteredData}
+        data={currentFuelInvoice}
         customStyles={customStyles}
         pagination
         striped
@@ -125,7 +193,34 @@ const ViewFuelData = () => {
         noDataComponent={
           <div className="text-muted py-3">No data available</div>
         }
-      />
+      /> */}
+
+      {/* Main Data Table */}
+      <div className="card">
+        <div className="card-body p-0 rounded-3 overflow-hidden">
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            expandableRows
+            expandableRowsComponent={ExpandableComponent}
+            expandOnRowClicked={true}
+            expandableRowExpanded={row => expandedRows[row.province] || false}
+            onRowExpandToggled={handleRowExpandToggled}
+            expandableRowDisabled={row => !row.records || row.records.length === 0}
+            expandableRowsHideExpander={false}
+            pagination
+            // striped
+            highlightOnHover
+            customStyles={customStyles}
+            responsive
+            noDataComponent={
+              <div className="text-muted p-3">No fuel data available</div>
+            }
+          />
+        </div>
+      </div>
+
+
     </div>
   )
 }

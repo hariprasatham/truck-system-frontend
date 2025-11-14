@@ -2,10 +2,10 @@
 import './Loader.css';
 import TableLoader from './TableLoader';
 
-const Loader = () => (
+const Loader = ({message}) => (
   <div className="loader-overlay">
     <div className="loader-content">
-      <TableLoader />
+      <TableLoader message={message}/>
     </div>
   </div>
 );

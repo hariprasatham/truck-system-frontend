@@ -28,7 +28,7 @@
     /* HERO */
     .hero {
       position: relative;
-      background: url('/3.png') no-repeat center/cover;
+      /* background: url('/3.png') no-repeat center/cover; */
       height: 100vh;
       display: flex;
       align-items: center;

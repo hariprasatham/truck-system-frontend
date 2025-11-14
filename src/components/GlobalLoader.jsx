@@ -6,7 +6,7 @@ import useCompanyUsersStore from '../store/companyUsersStore';
 import useCompaniesStore from '../store/companiesStore';
 import useCompanyDriverStore from '../store/companyDriverStore';
 
-const GlobalLoader = ({loading}) => {
+const GlobalLoader = ({loading, message="Loading..."}) => {
 
 
   // Prevent body scrolling when loader is active
@@ -23,7 +23,7 @@ const GlobalLoader = ({loading}) => {
 
   if (!loading) return null;
   
-  return <Loader />;
+  return <Loader message={message} />;
 };
 
 export default GlobalLoader;
