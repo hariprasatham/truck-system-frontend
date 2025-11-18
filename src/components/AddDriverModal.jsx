@@ -47,10 +47,44 @@ const AddDriverModal = ({
 
     loadStates();
   }, [newDriver.country, fetchStatesByCountry]);
+  const [errors, setErrors] = useState({});
+
 
   const onSubmit = (e) => {
     e.preventDefault();
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     handleAddDriver();
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    // Personal Details validation
+    if (!newDriver?.first_name?.trim()) newErrors.first_name = 'First name is required';
+    if (!newDriver?.last_name?.trim()) newErrors.last_name = 'Last name is required';
+    if (!newDriver?.phone?.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(newDriver.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Invalid phone number format';
+    }
+    if (newDriver?.email && !/\S+@\S+\.\S+/.test(newDriver.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    // License Details validation
+    if (!newDriver?.license?.trim()) newErrors.license = 'License number is required';
+    if (!newDriver?.country?.trim()) newErrors.country = 'Country is required';
+    if (!newDriver?.state?.trim()) newErrors.state = 'State/Province is required';
+    if (newDriver?.expiry_date && new Date(newDriver.expiry_date) < new Date()) {
+      newErrors.expiry_date = 'License cannot be expired';
+    }
+    // Driver Type validation
+    if (!newDriver?.driver_type?.trim()) newErrors.driver_type = 'Driver type is required';
+    // HOS & ELD Details validation
+    if (!newDriver?.timezone?.trim()) newErrors.timezone = 'Time zone is required';
+    return newErrors;
   };
 
   const onChange = (e) => {
@@ -60,6 +94,11 @@ const AddDriverModal = ({
       setNewDriver((prev) => ({ ...prev, [name]: !prev[name] }));
     } else {
       setNewDriver((prev) => ({ ...prev, [name]: value }));
+    }
+    
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -108,8 +147,11 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.first_name}
                       onChange={onChange}
-                      required
+                      isInvalid={!!errors.first_name}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.first_name}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6} lg={3}>
                     <Form.Control
@@ -118,8 +160,11 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.last_name}
                       onChange={onChange}
-                      required
+                      isInvalid={!!errors.last_name}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.last_name}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6} lg={3}>
                     <Form.Control
@@ -128,8 +173,11 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.phone}
                       onChange={onChange}
-                      required
+                      isInvalid={!!errors.phone}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.phone}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6} lg={3}>
                     <Form.Control
@@ -139,7 +187,11 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.email}
                       onChange={onChange}
+                      isInvalid={!!errors.email}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.email}
+                    </Form.Control.Feedback>
                   </Col>
                 </Row>
               </Accordion.Body>
@@ -159,8 +211,11 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.license}
                       onChange={onChange}
-                      required
+                      isInvalid={!!errors.license}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.license}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6} lg={3}>
                     <Form.Select
@@ -168,6 +223,7 @@ const AddDriverModal = ({
                       className="form-select-md"
                       value={newDriver.country}
                       onChange={onChange}
+                      isInvalid={!!errors.country}
                     >
                       <option value="">Select Country</option>
                       {countries?.map((c) => (
@@ -176,6 +232,9 @@ const AddDriverModal = ({
                         </option>
                       ))}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.country}
+                    </Form.Control.Feedback>
                   </Col>
 
                   <Col md={6} lg={3}>
@@ -184,6 +243,7 @@ const AddDriverModal = ({
                       className="form-select-md"
                       value={newDriver.state}
                       onChange={onChange}
+                      isInvalid={!!errors.state}
                     >
                       <option value="">Select State / Province</option>
                       {states?.map((s) => (
@@ -192,6 +252,9 @@ const AddDriverModal = ({
                         </option>
                       ))}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.state}
+                    </Form.Control.Feedback>
                   </Col>
 
                   <Col md={6} lg={3}>
@@ -201,7 +264,11 @@ const AddDriverModal = ({
                       name="expiry_date"
                       value={newDriver?.expiry_date}
                       onChange={onChange}
+                      isInvalid={!!errors.expiry_date}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.expiry_date}
+                    </Form.Control.Feedback>
                   </Col>
                 </Row>
               </Accordion.Body>
@@ -218,12 +285,15 @@ const AddDriverModal = ({
                   size="sm"
                   value={newDriver?.driver_type}
                   onChange={onChange}
-                  required
+                  isInvalid={!!errors.driver_type}
                 >
                   <option value="">Select Driver Type</option>
                   <option value="company_driver">Company Driver</option>
                   <option value="owner_operator">Owner Operator</option>
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors.driver_type}
+                </Form.Control.Feedback>
               </Accordion.Body>
             </Accordion.Item>
 
@@ -240,10 +310,14 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.canadian_hos}
                       onChange={onChange}
+                      isInvalid={!!errors.canadian_hos}
                     >
                       <option value="70_7">70 hour / 7 Day</option>
                       <option value="120_14">120 hour / 14 Day</option>
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.canadian_hos}
+                    </Form.Control.Feedback>
                   </Col>
                   <Col md={6}>
                     <Form.Select
@@ -251,10 +325,14 @@ const AddDriverModal = ({
                       size="sm"
                       value={newDriver?.us_hos}
                       onChange={onChange}
+                      isInvalid={!!errors.us_hos}
                     >
                       <option value="70_8">70 hour / 8 Day</option>
                       <option value="60_7">60 hour / 7 Day</option>
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.us_hos}
+                    </Form.Control.Feedback>
                   </Col>
                 </Row>
 
@@ -281,7 +359,7 @@ const AddDriverModal = ({
                     size="sm"
                     value={newDriver?.timezone}
                     onChange={onChange}
-                    required
+                    isInvalid={!!errors.timezone}
                   >
                     <option value="">Select Time Zone</option>
                     <option value="PST">Pacific Time (PST)</option>
@@ -292,6 +370,9 @@ const AddDriverModal = ({
                     <option value="HAST">Hawaii–Aleutian Time (HAST)</option>
                     <option value="NST">Newfoundland Time (NST)</option>
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.timezone}
+                  </Form.Control.Feedback>
                 </div>
               </Accordion.Body>
             </Accordion.Item>
