@@ -17,9 +17,21 @@ const DriverManagement = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver, pagination, currentDriver, clearCurrentDriver, importDrivers } = useCompanyDriverStore();
+  const {
+    drivers,
+    fetchDriversByCompany,
+    fetchDriverById,
+    deleteDriver,
+    toggleDriverStatus,
+    updateDriver,
+    loading,
+    addDriver,
+    pagination,
+    currentDriver,
+    clearCurrentDriver,
+    importDrivers,
+  } = useCompanyDriverStore();
   const { user } = useUserStore();
-
 
   // Derived state
   const role = user?.role;
@@ -53,15 +65,13 @@ const DriverManagement = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [file, setFile] = useState(null);
 
-
-
   // Fetch drivers on component mount or when companyId/userId changes
   useEffect(() => {
     const loadDrivers = async () => {
       try {
         await fetchDriversByCompany(companyId, userId);
       } catch (error) {
-        toast.error(error.message || 'Failed to load drivers');
+        toast.error(error.message || "Failed to load drivers");
       }
     };
 
@@ -98,8 +108,9 @@ const DriverManagement = () => {
       width: "10%",
       cell: (row) => (
         <span
-          className={`status-badge ${row.status === "active" ? "active" : "inactive"
-            }`}
+          className={`status-badge ${
+            row.status === "active" ? "active" : "inactive"
+          }`}
         >
           {row?.status?.charAt(0)?.toUpperCase() + row?.status?.slice(1)}
         </span>
@@ -155,18 +166,13 @@ const DriverManagement = () => {
           </button>
 
           {/* Delete (except admin) */}
-          <button
-            className="btn-action"
-            onClick={() => handleDelete(row.id)}
-          >
+          <button className="btn-action" onClick={() => handleDelete(row.id)}>
             <i className="bi bi-trash"></i>
           </button>
-
-
         </>
       ),
     },
-  ]
+  ];
 
   const handleToggleStatus = async (id, status) => {
     try {
@@ -174,21 +180,20 @@ const DriverManagement = () => {
       await toggleDriverStatus(id, newStatus);
       await fetchDriversByCompany(companyId, userId);
     } catch (error) {
-      console.error('Error toggling driver status:', error);
-      toast.error('Failed to toggle driver status');
+      console.error("Error toggling driver status:", error);
+      toast.error("Failed to toggle driver status");
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await deleteDriver(id)
-      await fetchDriversByCompany(companyId, userId)
+      await deleteDriver(id);
+      await fetchDriversByCompany(companyId, userId);
     } catch (error) {
-      console.error('Error deleting driver:', error);
-      toast.error('Failed to delete driver');
+      console.error("Error deleting driver:", error);
+      toast.error("Failed to delete driver");
     }
-
-  }
+  };
   const handleEditDriver = async (id) => {
     try {
       // Clear any previous driver data first
@@ -199,24 +204,24 @@ const DriverManagement = () => {
 
       // Use the response data directly instead of relying on store state
       if (response) {
-        response.expiry_date = new Date(response.expiry_date).toISOString().split('T')[0];
+        response.expiry_date = new Date(response.expiry_date)
+          .toISOString()
+          .split("T")[0];
         setNewDriver(response);
         setShowEditModal(true);
       }
     } catch (error) {
-      console.error('Error fetching driver:', error);
+      console.error("Error fetching driver:", error);
       // Optionally show an error message to the user
-      toast.error('Failed to load driver data');
+      toast.error("Failed to load driver data");
     }
   };
 
-
   const handleUpdateDriver = async () => {
-
     try {
-      await updateDriver(newDriver.id, newDriver)
-      await fetchDriversByCompany(companyId, userId)
-      setShowEditModal(false)
+      await updateDriver(newDriver.id, newDriver);
+      await fetchDriversByCompany(companyId, userId);
+      setShowEditModal(false);
       setNewDriver({
         first_name: "",
         last_name: "",
@@ -235,19 +240,17 @@ const DriverManagement = () => {
         yard_moves: true,
         timezone: "",
         personal_cmv: true,
-      })
+      });
     } catch (error) {
-      console.error('Error updating driver:', error);
-      toast.error('Failed to update driver');
+      console.error("Error updating driver:", error);
+      toast.error("Failed to update driver");
     }
-
-  }
+  };
 
   // Add new driver locally
   const handleAddDriver = async () => {
-
-    await addDriver(newDriver)
-    await fetchDriversByCompany(companyId, userId)
+    await addDriver(newDriver);
+    await fetchDriversByCompany(companyId, userId);
 
     setNewDriver({
       first_name: "",
@@ -267,41 +270,35 @@ const DriverManagement = () => {
       yard_moves: true,
       timezone: "",
       personal_cmv: true,
-
     });
     setShowAddModal(false);
   };
 
-
   const handlePageChange = (page) => {
-    fetchDriversByCompany(companyId, userId, page)
+    fetchDriversByCompany(companyId, userId, page);
   };
 
   const handlePerRowsChange = (rowsPerPage) => {
-    fetchDriversByCompany(companyId, userId, 1, rowsPerPage)
+    fetchDriversByCompany(companyId, userId, 1, rowsPerPage);
   };
 
   const handleViewDriver = async (id) => {
     navigate(`/companies/${companyId}/user-management/${userId}/drivers/${id}`);
-
-  }
-
+  };
 
   const handleImport = async (e) => {
     e.preventDefault();
     try {
       const response = await importDrivers(file);
       console.log(response);
-      if(response.errors.length > 0){
-        
-      }else{
+      if (response.errors.length > 0) {
+      } else {
         await fetchDriversByCompany(companyId, userId);
         setShowImportModal(false);
       }
-
     } catch (error) {
-      console.error('Error importing drivers:', error);
-      toast.error('Failed to import drivers');
+      console.error("Error importing drivers:", error);
+      toast.error("Failed to import drivers");
     }
   };
 
@@ -315,12 +312,16 @@ const DriverManagement = () => {
     <div className="content my-4">
       {/* Header Section */}
       <div className="d-flex justify-content-between mb-3 align-items-center">
-        {user.role == "admin" ? <h3>
-          <i className="bi bi-truck me-2"></i> All Drivers
-        </h3> : <h3>
-          <i className="bi bi-truck me-2"></i> Drivers of{" "}
-          <span className="text-primary">{user.username}</span>
-        </h3>}
+        {user.role == "admin" ? (
+          <h3>
+            <i className="bi bi-truck me-2"></i> All Drivers
+          </h3>
+        ) : (
+          <h3>
+            <i className="bi bi-truck me-2"></i> Drivers of{" "}
+            <span className="text-primary">{user.username}</span>
+          </h3>
+        )}
         <div>
           <button
             className="btn add-driver-btn-primary"
@@ -328,7 +329,10 @@ const DriverManagement = () => {
           >
             <i className="bi bi-person-plus"></i> Add Driver
           </button>
-          <button className="btn btn-secondary ms-2" onClick={() => setShowImportModal(true)}>
+          <button
+            className="btn btn-secondary ms-2"
+            onClick={() => setShowImportModal(true)}
+          >
             <i className="bi bi-upload"></i> Import Driver
           </button>
         </div>
@@ -342,7 +346,10 @@ const DriverManagement = () => {
 
         <div className="card-body p-0 rounded-3 overflow-hidden">
           <div className="table-responsive">
-            <DataTable columns={columns} data={drivers} pagination
+            <DataTable
+              columns={columns}
+              data={drivers}
+              pagination
               paginationServer={true}
               paginationTotalRows={pagination.total}
               paginationRowsPerPage={pagination.limit}

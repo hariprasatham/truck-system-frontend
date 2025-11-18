@@ -1,10 +1,52 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form, Accordion, Row, Col, Alert } from 'react-bootstrap';
-import useCompanyDriverStore from '../store/companyDriverStore';
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  Button,
+  Form,
+  Accordion,
+  Row,
+  Col,
+  Alert,
+} from "react-bootstrap";
+import useCompanyDriverStore from "../store/companyDriverStore";
+import { useCountryStateStore } from "../store/countryStateStore";
 
-const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver, handleAddDriver }) => {
-
+const AddDriverModal = ({
+  showAddModal,
+  setShowAddModal,
+  newDriver,
+  setNewDriver,
+  handleAddDriver,
+}) => {
   const { loading, error } = useCompanyDriverStore();
+  const { countries, states, fetchAllCountries, fetchStatesByCountry } =
+    useCountryStateStore();
+
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        await fetchAllCountries();
+      } catch (err) {
+        toast.error(err.message || "Failed to load countries");
+      }
+    };
+
+    loadCountries();
+  }, [fetchAllCountries]);
+
+  useEffect(() => {
+    if (!newDriver.country) return;
+
+    const loadStates = async () => {
+      try {
+        await fetchStatesByCountry(newDriver.country);
+      } catch (err) {
+        toast.error(err.message || "Failed to load states");
+      }
+    };
+
+    loadStates();
+  }, [newDriver.country, fetchStatesByCountry]);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -24,7 +66,13 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
   const stateOptions = {
     India: ["Maharashtra", "Tamil Nadu", "Karnataka", "Gujarat"],
     USA: ["California", "Texas", "New York", "Florida"],
-    Canada: ["Ontario", "Quebec", "British Columbia", "Alberta", "Prince Edward"],
+    Canada: [
+      "Ontario",
+      "Quebec",
+      "British Columbia",
+      "Alberta",
+      "Prince Edward",
+    ],
   };
 
   return (
@@ -46,7 +94,6 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
         {error ? <Alert variant="danger">{error}</Alert> : null}
         <Form onSubmit={onSubmit}>
           <Accordion defaultActiveKey="0" id="driverAccordion">
-
             {/* Personal Details */}
             <Accordion.Item eventKey="0" className="border-light-green">
               <Accordion.Header className="bg-light-green">
@@ -118,48 +165,40 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
                   <Col md={6} lg={3}>
                     <Form.Select
                       name="country"
-                      size="sm"
-                      value={newDriver?.country}
+                      className="form-select-md"
+                      value={newDriver.country}
                       onChange={onChange}
-                      required
                     >
                       <option value="">Select Country</option>
-                      <option>India</option>
-                      <option>USA</option>
-                      <option>Canada</option>
-                    </Form.Select>
-                  </Col>
-                  <Col md={6} lg={3}>
-                    {/* <Form.Select
-                      name="state"
-                      size="sm"
-                      value={newDriver?.state}
-                      onChange={onChange}
-                      required
-                    >
-                      <option value="">State/Province</option>
-                      <option>Maharashtra</option>
-                      <option>Ontario</option>
-                      <option>California</option>
-                    </Form.Select> */}
-                    <Form.Select
-                      name="state"
-                      size="sm"
-                      value={newDriver?.state}
-                      onChange={onChange}
-                      required
-                    >
-                      <option value="">Select State / Province</option>
-                      {stateOptions[newDriver?.country]?.map((state) => (
-                        <option key={state} value={state}>{state}</option>
+                      {countries?.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
                       ))}
                     </Form.Select>
                   </Col>
+
+                  <Col md={6} lg={3}>
+                    <Form.Select
+                      name="state"
+                      className="form-select-md"
+                      value={newDriver.state}
+                      onChange={onChange}
+                    >
+                      <option value="">Select State / Province</option>
+                      {states?.map((s) => (
+                        <option key={s.id} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Col>
+
                   <Col md={6} lg={3}>
                     <Form.Control
                       type="date"
-                      name="expiry_date"
                       size="sm"
+                      name="expiry_date"
                       value={newDriver?.expiry_date}
                       onChange={onChange}
                     />
@@ -256,19 +295,24 @@ const AddDriverModal = ({ showAddModal, setShowAddModal, newDriver, setNewDriver
                 </div>
               </Accordion.Body>
             </Accordion.Item>
-
           </Accordion>
 
           {/* Submit Button */}
           <div className="mt-3 text-end">
-            <Button type="submit" variant="success" size="sm" className="px-3" disabled={loading}>
+            <Button
+              type="submit"
+              variant="success"
+              size="sm"
+              className="px-3"
+              disabled={loading}
+            >
               <i className="bi bi-save"></i> Save Driver
             </Button>
           </div>
         </Form>
       </Modal.Body>
     </Modal>
-  )
-}
+  );
+};
 
-export default AddDriverModal
+export default AddDriverModal;
