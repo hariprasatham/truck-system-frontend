@@ -1,7 +1,6 @@
-import React from 'react'
-import { Modal, Button, Spinner, Row, Col } from 'react-bootstrap';
+import React from "react";
+import { Modal, Button, Spinner, Row, Col } from "react-bootstrap";
 const ViewTruckDetails = ({ open, onClose, truck }) => {
-
   const handleClose = () => onClose();
 
   return (
@@ -12,7 +11,6 @@ const ViewTruckDetails = ({ open, onClose, truck }) => {
       <Modal.Body>
         {truck ? (
           <div>
-
             <Row>
               <InfoBox label="Truck No" value={truck.truck_no} />
               <InfoBox label="Brand" value={truck.truck_brand} />
@@ -29,10 +27,17 @@ const ViewTruckDetails = ({ open, onClose, truck }) => {
 
             <Row>
               <InfoBox label="Equipment" value={truck.equipment_type} />
-              
+              <InfoBox label="Vin Number" value={truck.vin_number} />
               <InfoBox label="Capacity" value={truck.capacity} />
-              <InfoBox label="Created At" value={truck.created_at ? new Date(truck.created_at).toLocaleDateString() : "-"} />
-              <InfoBox label="" value="" />
+              <InfoBox
+                label="Created At"
+                value={
+                  truck.created_at
+                    ? new Date(truck.createdAt).toLocaleDateString()
+                    : "-"
+                }
+              />
+              {/* <InfoBox label="" value="" /> */}
             </Row>
           </div>
         ) : (
@@ -45,16 +50,14 @@ const ViewTruckDetails = ({ open, onClose, truck }) => {
         </Button>
       </Modal.Footer>
     </Modal>
-  )
-}
-
+  );
+};
 
 const InfoBox = ({ label, value }) => (
-  <Col className="mb-3" >
+  <Col className="mb-3">
     <div className="fw-normal text-muted fs-6">{label}</div>
     <div className="fw-semibold fs-6">{value || "-"}</div>
   </Col>
 );
 
-
-export default ViewTruckDetails
+export default ViewTruckDetails;

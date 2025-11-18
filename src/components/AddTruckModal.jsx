@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 
-const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
-  const [formData, setFormData] = useState({
-    truck_no: "",
-    truck_brand: "",
-    equipment_type: "",
-    sub_type: "",
-    truck_ownership: "",
-    model: "",
-    capacity: "",
-    status: "active",
-  });
-
+const AddTruckModal = ({
+  showAdd,
+  setShowAdd,
+  handleAdd,
+  formData,
+  setFormData,
+}) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));  
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Dynamically handle visibility for type sections
@@ -41,6 +36,7 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     handleAdd(formData);
+    // setFormData({ ...initialFormState });
   };
 
   return (
@@ -77,7 +73,16 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
                           className="form-control"
                           placeholder="Enter Truck Number"
                           value={formData.truck_no}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) =>
+                            handleChange({
+                              target: {
+                                name: "truck_no",
+                                value: e.target.value.toUpperCase(), // 🔥 Always uppercase
+                              },
+                            })
+                          }
+                          style={{ textTransform: "uppercase" }}
                           required
                         />
                       </div>
@@ -113,6 +118,27 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
                           <option value="Trailer">Trailer</option>
                           <option value="Forklift">Forklift</option>
                         </select>
+                      </div>
+
+                      <div className="col-md-6">
+                        <label>VIN Number</label>
+                        <input
+                          type="text"
+                          name="vin_number"
+                          className="form-control"
+                          placeholder="Enter Vin Number"
+                          value={formData.vin_number}
+                          // onChange={handleChange}
+                          onChange={(e) =>
+                            handleChange({
+                              target: {
+                                name: "vin_number",
+                                value: e.target.value.toUpperCase(), // 🔥 Always uppercase
+                              },
+                            })
+                          }
+                          required
+                        />
                       </div>
 
                       {/* Truck Type */}
@@ -187,75 +213,73 @@ const AddTruckModal = ({ showAdd, setShowAdd, handleAdd }) => {
 
                 {/* Model Details */}
                 <Accordion.Item eventKey="1" className="accordion-item">
-                  <Accordion.Header >
-                      Equipment / Model Details
-                  </Accordion.Header>
-                    <Accordion.Body className="accordion-body">
-                      <div className="row g-3">
-                        <div className="col-md-4">
-                          <label>Truck Ownership Type</label>
-                          <select
-                            name="truck_ownership"
-                            className="form-control"
-                            value={formData.truck_ownership}
-                            onChange={handleChange}
-                            required
-                          >
-                            <option value="">
-                              -- Select Truck Ownership --
-                            </option>
-                            <option value="Owner">Owner</option>
-                            <option value="Operator">Operator</option>
-                          </select>
-                        </div>
-
-                        <div className="col-md-4">
-                          <label>Model</label>
-                          <input
-                            type="text"
-                            name="model"
-                            className="form-control"
-                            value={formData.model}
-                            onChange={handleChange}
-                          />
-                        </div>
-                        <div className="col-md-4">
-                          <label>Capacity</label>
-                          <input
-                            type="text"
-                            name="capacity"
-                            className="form-control"
-                            value={formData.capacity}
-                            onChange={handleChange}
-                          />
-                        </div>
+                  <Accordion.Header>Equipment / Model Details</Accordion.Header>
+                  <Accordion.Body className="accordion-body">
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                        <label>Truck Ownership Type</label>
+                        <select
+                          name="truck_ownership"
+                          className="form-control"
+                          value={formData.truck_ownership}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="">-- Select Truck Ownership --</option>
+                          <option value="Owner">Owner</option>
+                          <option value="Operator">Operator</option>
+                        </select>
                       </div>
-                    </Accordion.Body>
 
+                      <div className="col-md-4">
+                        <label>Model</label>
+                        <input
+                          type="text"
+                          name="model"
+                          className="form-control"
+                          value={formData.model}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label>Capacity</label>
+                        <input
+                          type="text"
+                          name="capacity"
+                          className="form-control"
+                          value={formData.capacity}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </div>
+                  </Accordion.Body>
                 </Accordion.Item>
 
                 {/* Status Section */}
                 <Accordion.Item eventKey="2" className="accordion-item">
-                  <Accordion.Header className="accordion-header" id="headingThree">
-                      Assign Equipment Status
+                  <Accordion.Header
+                    className="accordion-header"
+                    id="headingThree"
+                  >
+                    Assign Equipment Status
                   </Accordion.Header>
 
-                    <Accordion.Body className="accordion-body">
-                      <div className="row g-3">
-                        <div className="col-md-6">
-                          <label>Status</label>
-                          <select
-                            name="status"
-                            className="form-control"
-                            value={formData.status}
-                            onChange={handleChange}
-                          >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                          </select>
-                        </div>
+                  <Accordion.Body className="accordion-body">
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label>Status</label>
+                        <select
+                          name="status"
+                          className="form-control"
+                          value={formData.status}
+                          onChange={handleChange}
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
                       </div>
-                    </Accordion.Body>
+                    </div>
+                  </Accordion.Body>
                 </Accordion.Item>
               </Accordion>
             </Modal.Body>
