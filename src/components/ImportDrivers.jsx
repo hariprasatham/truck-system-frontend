@@ -41,9 +41,9 @@ const ImportDrivers = ({ showImportModal, setShowImportModal, onSubmit, onChange
                             <Button variant="secondary" onClick={() => window.location.href = DriverSample} className='me-2'>
                                 <i className="bi bi-download"></i> Download Template
                             </Button>
-                            <Button variant="primary" type="submit" disabled={loading}>
-                                {loading ? "Uploading..." : "Upload"}
-                            </Button>
+                            <button className='btn add-driver-btn-primary' type="submit" disabled={loading}>
+                                <i className="bi bi-upload"></i>{loading ? "Uploading..." : "Upload"}
+                            </button>
                         </div>
                     </Form>
                 </Modal.Body>

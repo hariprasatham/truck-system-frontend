@@ -17,6 +17,7 @@ const FuelInvoiceManagement = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const formRef = useRef(null);
+  const [errors, setErrors] = useState({});
 
   const { getAllFuelInvoices, fuelInvoices, trucks, fetchAllTrucksForFuelInvoice, downloadFuelInvoice, uploadFuelSheet, loading, spinnerMessage, pagination, timeoutId, cleanup } = useFuelStore();
 
@@ -30,6 +31,19 @@ const FuelInvoiceManagement = () => {
     };
   }, []);
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!selectedTruck?.trim()) {
+      newErrors.selectedTruck = 'Please select a truck';
+    }
+    if (!file) {
+      newErrors.file = 'Please upload a PDF invoice';
+    } else if (file.type !== 'application/pdf') {
+      newErrors.file = 'Only PDF files are allowed';
+    }
+    return newErrors;
+  };
+
   const navigate = useNavigate();
 
   const [selectedTruck, setSelectedTruck] = useState("");
@@ -40,18 +54,13 @@ const FuelInvoiceManagement = () => {
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
 
-  const handleTruckChange = (e) => {
-    const truckId = e.target.value;
-    setSelectedTruck(truckId);
-    const truck = trucks.find((t) => t.id === Number(truckId));
-    setTruckType(truck ? truck.sub_type : "");
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedTruck || !file) {
-      toast.warning("⚠️ Please select truck and upload PDF.");
+    const formErrors = validateForm();
+    setErrors(formErrors);
+    if (Object.keys(formErrors).length > 0) {
       return;
     }
     const formdata = new FormData();
@@ -155,7 +164,7 @@ const FuelInvoiceManagement = () => {
         </button>
       ),
       width: "60px",
-      center: true,
+      // center: "true",
     },
     {
       name: "Action",
@@ -174,7 +183,7 @@ const FuelInvoiceManagement = () => {
 
   // 🔍 Search + Date range filtering
   const filteredData = useMemo(() => {
-    if(!fuelInvoices){
+    if (!fuelInvoices) {
       return [];
     }
 
@@ -200,11 +209,31 @@ const FuelInvoiceManagement = () => {
 
 
   const handlePageChange = (page) => {
-    getAllFuelInvoices({page});
+    getAllFuelInvoices({ page });
   };
 
   const handlePerRowsChange = (rowsPerPage) => {
-    getAllFuelInvoices({limit: rowsPerPage});
+    getAllFuelInvoices({ limit: rowsPerPage });
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    // Clear error for this field when user selects a file
+    if (errors.file) {
+      setErrors((prev) => ({ ...prev, file: '' }));
+    }
+  };
+
+  const handleTruckChange = (e) => {
+    const truckId = e.target.value;
+    setSelectedTruck(truckId);
+    const truck = trucks.find((t) => t.id === Number(truckId));
+    setTruckType(truck ? truck.sub_type : "");
+    // Clear error for this field when user makes a selection
+    if (errors.selectedTruck) {
+      setErrors((prev) => ({ ...prev, selectedTruck: '' }));
+    }
   };
 
   return (
@@ -218,7 +247,7 @@ const FuelInvoiceManagement = () => {
         <div className="col-md-3">
           <label className="form-label">Truck No:</label>
           <select
-            className="form-control"
+            className={`form-control ${errors.selectedTruck ? 'is-invalid' : ''}`}
             value={selectedTruck}
             onChange={handleTruckChange}
           >
@@ -229,6 +258,11 @@ const FuelInvoiceManagement = () => {
               </option>
             ))}
           </select>
+          {/* {errors.selectedTruck && (
+            <div className="invalid-feedback d-block">
+              {errors.selectedTruck}
+            </div>
+          )} */}
         </div>
 
         <div className="col-md-3">
@@ -245,10 +279,15 @@ const FuelInvoiceManagement = () => {
           <label className="form-label">PDF Invoice:</label>
           <input
             type="file"
-            className="form-control"
+            className={`form-control ${errors.file ? 'is-invalid' : ''}`}
             accept="application/pdf"
-            onChange={(e) => setFile(e.target.files[0])}
+            onChange={handleFileChange}
           />
+          {/* {errors.file && (
+            <div className="invalid-feedback d-block">
+              {errors.file}
+            </div>
+          )} */}
         </div>
 
         <div className="col-md-3">
@@ -284,26 +323,26 @@ const FuelInvoiceManagement = () => {
           />
         </div>
       </div>
-            <div className="card shadow-sm">
+      <div className="card shadow-sm">
         <div className="card-body p-0 rounded-3 overflow-hidden">
 
 
-      {/* DataTable */}
-      <DataTable
-        columns={columns}
-        data={filteredData}
-        highlightOnHover
-        striped
-        responsive
-        pagination
-        paginationServer={true}
-        paginationTotalRows={pagination.total}
-        paginationRowsPerPage={pagination.limit}
-        paginationRowsPerPageOptions={[2, 10, 20]}
-        onChangePage={handlePageChange}
-        onChangeRowsPerPage={handlePerRowsChange}
-      />
-      </div>
+          {/* DataTable */}
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            highlightOnHover
+            striped
+            responsive
+            pagination
+            paginationServer={true}
+            paginationTotalRows={pagination.total}
+            paginationRowsPerPage={pagination.limit}
+            paginationRowsPerPageOptions={[2, 10, 20]}
+            onChangePage={handlePageChange}
+            onChangeRowsPerPage={handlePerRowsChange}
+          />
+        </div>
       </div>
 
       <FuelInvoiceModal show={showModal} onClose={() => setShowModal(false)} invoice={selectedInvoice} />
