@@ -178,15 +178,15 @@ console.log('Current driver data:', safeNewDriver);
               </Accordion.Header>
               <Accordion.Body>
                 <Form.Select
-                  name="dispatcher"
+                  name="driver_type"
                   size="sm"
-                  value={newDriver?.dispatcher}
+                  value={newDriver?.driver_type}
                   onChange={onChange}
                   required
                 >
                   <option value="">Select Driver Type</option>
-                  <option>owner</option>
-                  <option>operator</option>
+                  <option value="company_driver">Company Driver</option>
+                  <option value="owner_operator">Owner Operator</option>
                 </Form.Select>
               </Accordion.Body>
             </Accordion.Item>
@@ -248,8 +248,14 @@ console.log('Current driver data:', safeNewDriver);
                     required
                   >
                     <option value="">Select Time Zone</option>
-                    <option value="EST">Eastern Time (Toronto)</option>
-                    <option value="IST">India Standard Time</option>
+                    <option value="PST">Pacific Time (PST)</option>
+                    <option value="MST">Mountain Time (MST)</option>
+                    <option value="CST">Central Time (CST)</option>
+                    <option value="EST">Eastern Time (EST)</option>
+                    <option value="AKST">Alaska Time (AKST)</option>
+                    <option value="HAST">Hawaii–Aleutian Time (HAST)</option>
+                    <option value="NST">Newfoundland Time (NST)</option>
+
                   </Form.Select>
                 </div>
               </Accordion.Body>

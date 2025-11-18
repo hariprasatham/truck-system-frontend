@@ -15,6 +15,7 @@ const useCompanyDriverStore = create((set, get) => ({
     totalItems: 0,
     itemsPerPage: 10,
   },
+  importDriverError: [],
 
   // Actions
   // Fetch all drivers for a company with pagination
@@ -215,8 +216,38 @@ const useCompanyDriverStore = create((set, get) => ({
     }
   },
 
+  importDrivers: async (file) => {
+    set({ loading: true, error: null });
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      //add headers
+      const response = await api.post('/driver/bulkCreate', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      set({ loading: false, importDriverError: response.data.results.errors });
+      
+      if(!response.data.results.errors){
+        toast.success(response.data.results?.message);
+      }
+      return response.data.results;
+
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Failed to import drivers',
+        loading: false 
+      });
+      throw error;
+    }
+  },
+
   // Clear current driver
   clearCurrentDriver: () => set({ currentDriver: null }),
+
+  //clear import driver error
+  clearImportDriverError: () => set({ importDriverError: [] }),
 
   // Clear errors
   clearError: () => set({ error: null }),

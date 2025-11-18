@@ -9,6 +9,7 @@ import TableLoader from "../components/TableLoader";
 import EditDriverModal from "../components/EditDriverModal";
 import useUserStore from "../store/userStore";
 import toast from "react-hot-toast";
+import ImportDrivers from "../components/ImportDrivers";
 
 const DriverManagement = () => {
   // Dummy driver data
@@ -16,7 +17,7 @@ const DriverManagement = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver, pagination, currentDriver, clearCurrentDriver } = useCompanyDriverStore();
+  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver, pagination, currentDriver, clearCurrentDriver, importDrivers } = useCompanyDriverStore();
   const { user } = useUserStore();
 
 
@@ -36,7 +37,7 @@ const DriverManagement = () => {
     expiry_date: "",
     company_id: companyId,
     user_id: userId,
-    dispatcher: "driver",
+    driver_type: "company_driver",
     status: "active",
     phone: "",
     email: "",
@@ -47,9 +48,10 @@ const DriverManagement = () => {
     yard_moves: true,
     timezone: "",
     personal_cmv: true,
-
-
   });
+
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [file, setFile] = useState(null);
 
 
 
@@ -197,6 +199,7 @@ const DriverManagement = () => {
 
       // Use the response data directly instead of relying on store state
       if (response) {
+        response.expiry_date = new Date(response.expiry_date).toISOString().split('T')[0];
         setNewDriver(response);
         setShowEditModal(true);
       }
@@ -221,7 +224,7 @@ const DriverManagement = () => {
         expiry_date: "",
         company_id: companyId,
         user_id: userId,
-        dispatcher: "driver",
+        driver_type: "company_driver",
         status: "active",
         phone: "",
         email: "",
@@ -253,7 +256,7 @@ const DriverManagement = () => {
       expiry_date: "",
       company_id: companyId,
       user_id: userId,
-      dispatcher: "driver",
+      driver_type: "company_driver",
       status: "active",
       phone: "",
       email: "",
@@ -282,6 +285,32 @@ const DriverManagement = () => {
     navigate(`/companies/${companyId}/user-management/${userId}/drivers/${id}`);
 
   }
+
+
+  const handleImport = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await importDrivers(file);
+      console.log(response);
+      if(response.errors.length > 0){
+        
+      }else{
+        await fetchDriversByCompany(companyId, userId);
+        setShowImportModal(false);
+      }
+
+    } catch (error) {
+      console.error('Error importing drivers:', error);
+      toast.error('Failed to import drivers');
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFile(file);
+    }
+  };
   return (
     <div className="content my-4">
       {/* Header Section */}
@@ -293,15 +322,15 @@ const DriverManagement = () => {
           <span className="text-primary">{user.username}</span>
         </h3>}
         <div>
-          <Button
-            variant="btn add-driver-btn-primary"
+          <button
+            className="btn add-driver-btn-primary"
             onClick={() => setShowAddModal(true)}
           >
             <i className="bi bi-person-plus"></i> Add Driver
-          </Button>
-          {/* <Button variant="secondary" className="ms-2" onClick={() => navigate(-1)}>
-            <i className="bi bi-arrow-left"></i> Back to Users
-          </Button> */}
+          </button>
+          <button className="btn btn-secondary ms-2" onClick={() => setShowImportModal(true)}>
+            <i className="bi bi-upload"></i> Import Driver
+          </button>
         </div>
       </div>
 
@@ -343,6 +372,14 @@ const DriverManagement = () => {
         newDriver={newDriver}
         setNewDriver={setNewDriver}
         handleEditDriver={handleUpdateDriver}
+        loading={loading}
+      />
+
+      <ImportDrivers
+        showImportModal={showImportModal}
+        setShowImportModal={setShowImportModal}
+        onSubmit={handleImport}
+        onChange={handleFileChange}
         loading={loading}
       />
     </div>

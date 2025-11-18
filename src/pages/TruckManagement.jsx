@@ -237,12 +237,12 @@ const TruckManagement = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
           <h3 className="mb-0 ms-3">Equipment Management</h3>
         <div className="d-flex align-items-center gap-2">
-          <Button variant="success" onClick={() => setShowAdd(true)}>
+          <button className="btn add-truck-btn-primary" onClick={() => setShowAdd(true)}>
             <i className="bi bi-plus-circle"></i> Add Equipment
-          </Button>
-          <Button variant="primary">
+          </button>
+          <button className="btn btn-primary">
             <i className="bi bi-upload"></i> Import Excel
-          </Button>
+          </button>
         </div>
       </div>
 

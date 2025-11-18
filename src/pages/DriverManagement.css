@@ -15,7 +15,7 @@
   background: #f3f4f6;
   border-radius: 6px;
 }
-.add-btn-primary {
+.add-driver-btn-primary {
   background-color: #d1fae5;
   color: #000; /* Black text */
   border: none;
@@ -29,7 +29,7 @@
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.add-btn-primary:hover {
+.add-driver-btn-primary:hover {
   background-color: #047857;
   color: #000;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
