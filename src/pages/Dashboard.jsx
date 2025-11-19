@@ -1,15 +1,15 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import axios from "axios";
 import MonthlyDeliveriesChart from "../components/MonthlyDeliveriesChart";
 import DashboardCard from "../components/DashboardCard";
 import useDashboardStore from "../store/dashboardStore";
 import useUserStore from "../store/userStore";
+import GlobalLoader from "../components/GlobalLoader";
 
 const Dashboard = () => {
   const { stats, loading, fetchDashboardStats } = useDashboardStore();
   const { user } = useUserStore();
-
 
   useEffect(() => {
     fetchDashboardStats();
@@ -76,6 +76,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <GlobalLoader loading={loading} />
     </div>
   );
 };

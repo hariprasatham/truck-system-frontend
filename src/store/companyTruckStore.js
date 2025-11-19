@@ -14,7 +14,7 @@ const useCompanyTruckStore = create((set, get) => ({
     totalItems: 0,
     itemsPerPage: 10,
   },
-  brands: [],
+  allbrands: [],
 
   // Actions
   // Get all brands
@@ -24,7 +24,7 @@ const useCompanyTruckStore = create((set, get) => ({
       const response = await api.get(`/truck/get/allBrands`);
       
       set({
-        brands: response.data.results,
+        allbrands: response.data.results,
         loading: false
       });
       return response.data;
@@ -40,42 +40,88 @@ const useCompanyTruckStore = create((set, get) => ({
   // Add brand
   addBrand: async (brandData) => {
     set({ loading: true, error: null });
+  
     try {
-
       const response = await api.post(`/truck/addBrand`, brandData);
-      
+  
+      const { allbrands } = get();
+  
       set({
-        brands: [...brands, ...response.data.results],
+        allbrands: [...allbrands, response.data.results], // append object
         loading: false
       });
+  
       return response.data;
     } catch (error) {
-      set({ 
+      set({
         error: error.response?.data?.message || 'Failed to add brand',
         loading: false 
       });
       throw error;
     }
   },
-
-  // Delete brand
-  deleteBrand: async (brandId) => {
+  
+  updateBrand: async (brandId, brandData) => {
     set({ loading: true, error: null });
+  
     try {
-
-      const response = await api.delete(`/truck/delete/brand/${brandId}`);
-      
-      set({loading: false});
-      toast.success('Brand deleted successfully');
+      const response = await api.put(`/truck/brandupdate/${brandId}`, brandData);
+  
+      const { allbrands } = get();
+  
+      // Update the brand in the array
+      const updatedBrands = allbrands.map((brand) =>
+        brand.id === brandId ? response.data.results : brand
+      );
+  
+      set({
+        allbrands: updatedBrands,
+        loading: false,
+      });
+  
+      toast.success("Brand updated successfully");
+  
       return response.data;
+  
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to delete brand',
-        loading: false 
+      set({
+        error: error.response?.data?.message || "Failed to update brand",
+        loading: false,
       });
       throw error;
     }
   },
+  
+  
+
+  deleteBrand: async (brandId) => {
+    set({ loading: true, error: null });
+  
+    try {
+      const response = await api.delete(`/truck/delete/brand/${brandId}`);
+  
+      const { allbrands } = get();     // get current brand list
+  
+      // Filter out deleted brand
+      const updatedBrands = allbrands.filter((brand) => brand.id !== brandId);
+  
+      set({
+        allbrands: updatedBrands,      // update state
+        loading: false
+      });
+  
+      toast.success("Brand deleted successfully");
+      return response.data;
+  
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to delete brand",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+  
 
   // Fetch all trucks for a company with pagination
   fetchTrucksByCompany: async (companyId, params = {}) => {

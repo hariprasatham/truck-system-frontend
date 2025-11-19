@@ -29,6 +29,7 @@ const TruckManagement = () => {
     currentTruck,
     deleteTruck,
     bulkAddTrucks,
+    fetchAllBrands,
   } = useCompanyTruckStore();
 
   const { user } = useUserStore();
@@ -395,6 +396,7 @@ const TruckManagement = () => {
         handleAdd={handleAdd}
         formData={formData}
         setFormData={setFormData}
+        // fetchAllBrands={fetchAllBrands}
       />
 
       {/* Edit Equipment Modal */}
@@ -406,6 +408,7 @@ const TruckManagement = () => {
           editData={editData}
           formData={formData}
           setFormData={setFormData}
+          // fetchAllBrands={fetchAllBrands}
         />
       )}
 
