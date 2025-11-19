@@ -15,7 +15,7 @@ const ImportDrivers = ({ showImportModal, setShowImportModal, onSubmit, onChange
                 }}
                 size="md"
                 aria-labelledby="contained-modal-title-vcenter"
-                centered
+                top-centered
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">

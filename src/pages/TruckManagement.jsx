@@ -304,7 +304,7 @@ const TruckManagement = () => {
     const reader = new FileReader();
 
     reader.onload = (evt) => {
-      const workbook = XLSX.read(evt.target.result, { type: "binary" });
+      const workbook = XLSX.read(evt.target.result, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
@@ -326,7 +326,7 @@ const TruckManagement = () => {
       setExcelData(json);
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleUpload = () => {
@@ -354,7 +354,7 @@ const TruckManagement = () => {
           >
             <i className="bi bi-plus-circle"></i> Add Equipment
           </button>
-          <button className="btn btn-primary" onClick={openModal}>
+          <button className="btn btn btn-secondary ms-2" onClick={openModal}>
             <i className="bi bi-upload"></i> Import Excel
           </button>
         </div>
