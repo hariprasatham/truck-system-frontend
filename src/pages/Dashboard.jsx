@@ -3,33 +3,17 @@ import "./Dashboard.css";
 import axios from "axios";
 import MonthlyDeliveriesChart from "../components/MonthlyDeliveriesChart";
 import DashboardCard from "../components/DashboardCard";
+import useDashboardStore from "../store/dashboardStore";
+import useUserStore from "../store/userStore";
 
 const Dashboard = () => {
-  
-  const [counts, setCounts] = useState({});
-  const [role, setRole] = useState("");
-  const [loading, setLoading] = useState(true);
+  const { stats, loading, fetchDashboardStats } = useDashboardStore();
+  const { user } = useUserStore();
+
 
   useEffect(() => {
-    const fetchDashboardCounts = async () => {
-      try {
-        const token = localStorage.getItem("access_token"); // JWT stored after login
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/auth/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.data.success) {
-          setCounts(res.data.data);
-          setRole(res.data.role);
-        }
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardCounts();
-  }, []);
+    fetchDashboardStats();
+  }, [fetchDashboardStats]);
 
   return (
     <div className="content">
@@ -41,28 +25,28 @@ const Dashboard = () => {
         <DashboardCard
           icon="bi-truck"
           title="Total Trucks"
-          value={counts.trucks || 0}
+          value={stats.trucks || 0}
           color="text-success"
         />
         <DashboardCard
           icon="bi-person-badge"
           title="Active Drivers"
-          value={counts.drivers || 0}
+          value={stats.drivers || 0}
           color="text-primary"
         />
         {/* Admin-only cards */}
-        {role === "admin" && (
+        {user?.role === "admin" && (
           <>
             <DashboardCard
               icon="bi-people"
               title="Total Users"
-              value={counts.users || 0}
+              value={stats.users || 0}
               color="text-warning"
             />
             <DashboardCard
               icon="bi-building"
               title="Total Companies"
-              value={counts.companies || 0}
+              value={stats.companies || 0}
               color="text-danger"
             />
           </>
@@ -70,13 +54,13 @@ const Dashboard = () => {
         <DashboardCard
           icon="bi-bar-chart"
           title="Total Fuel Quantity"
-          value={counts.totalQuantity || 0}
+          value={stats.totalQuantity || 0}
           color="text-info"
         />
         <DashboardCard
           icon="bi-currency-rupee"
           title="Total Final Amount"
-          value={counts.totalAmount || 0}
+          value={stats.totalAmount || 0}
           color="text-success"
         />
       </div>

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Table, Pagination } from "react-bootstrap";
 import "./DriverManagement.css";
 import AddDriverModal from "../components/AddDriverModal";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import useCompanyDriverStore from "../store/companyDriverStore";
 import TableLoader from "../components/TableLoader";
@@ -15,7 +14,6 @@ const DriverManagement = () => {
   // Dummy driver data
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const {
     drivers,
@@ -27,7 +25,6 @@ const DriverManagement = () => {
     loading,
     addDriver,
     pagination,
-    currentDriver,
     clearCurrentDriver,
     importDrivers,
   } = useCompanyDriverStore();
@@ -40,8 +37,6 @@ const DriverManagement = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
     first_name: "",
     last_name: "",
