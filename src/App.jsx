@@ -31,6 +31,7 @@ import DriverDetails from "./pages/DriverDetails";
 import PreEmploymentApplicationList from "./pages/PreEmploymentApplicationList";
 
 import ErrorBoundary from "./components/ErrorBoundary";
+import Brand from "./pages/Brand";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
@@ -66,6 +67,7 @@ const App = () => {
               <Route path="/view-fuel-data/:fuelId" element={<ViewFuelData />} />
               <Route path="/pre-employment-application/form" element={<PreEmploymentCheck />} />
               <Route path="/pre-employment-application" element={<PreEmploymentApplicationList />} />
+              <Route path="/brand" element={<Brand />} />
               {/* <Route path="/drivers" element={<DriverManagement />} /> */}
               {/* <Route path="/profile" element={<Profile />} /> */}
             </Route>

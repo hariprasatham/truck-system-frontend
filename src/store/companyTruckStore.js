@@ -14,8 +14,69 @@ const useCompanyTruckStore = create((set, get) => ({
     totalItems: 0,
     itemsPerPage: 10,
   },
+  brands: [],
 
   // Actions
+  // Get all brands
+  fetchAllBrands: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await api.get(`/truck/get/allBrands`);
+      
+      set({
+        brands: response.data.results,
+        loading: false
+      });
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Failed to fetch brands',
+        loading: false 
+      });
+      throw error;
+    }
+  },
+
+  // Add brand
+  addBrand: async (brandData) => {
+    set({ loading: true, error: null });
+    try {
+
+      const response = await api.post(`/truck/addBrand`, brandData);
+      
+      set({
+        brands: [...brands, ...response.data.results],
+        loading: false
+      });
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Failed to add brand',
+        loading: false 
+      });
+      throw error;
+    }
+  },
+
+  // Delete brand
+  deleteBrand: async (brandId) => {
+    set({ loading: true, error: null });
+    try {
+
+      const response = await api.delete(`/truck/delete/brand/${brandId}`);
+      
+      set({loading: false});
+      toast.success('Brand deleted successfully');
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Failed to delete brand',
+        loading: false 
+      });
+      throw error;
+    }
+  },
+
   // Fetch all trucks for a company with pagination
   fetchTrucksByCompany: async (companyId, params = {}) => {
     set({ loading: true, error: null });
