@@ -194,24 +194,7 @@ const useCompanyTruckStore = create((set, get) => ({
     }
   },
 
-
-  bulkAddTrucks: async (truckList, params = {}) => {
-    set({ loading: true, truckError: null });
-  
-    try {
-      const response = await api.post('/truck/register/bulk', truckList, { params });
-      set({ loading: false });
-      toast.success('Bulk trucks added successfully');
-      return response.data;
-  
-    } catch (error) {
-      set({
-        loading: false,
-        truckError: error.response?.data?.message || "Failed to add trucks",
-      });
-      throw error;
-    }
-  },
+ 
   
 
   updateTruck: async (truckId, truckData) => {
@@ -245,6 +228,30 @@ const useCompanyTruckStore = create((set, get) => ({
       throw error;
     }
   },
+
+
+  bulkAddTrucks: async (truckList, params = {}) => {
+    set({ loading: true, truckError: null });
+  
+    try {
+      const response = await api.post('/truck/register/bulk', truckList, { params });
+  
+      set({ loading: false });
+  
+      return response.data; // 🔥 return full API response
+  
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to add trucks";
+  
+      set({
+        loading: false,
+        truckError: message,
+      });
+  
+      return { error: true, message }; // 🔥 return safe object instead of throwing
+    }
+  },
+  
 
   //change status
   changeTruckStatus: async (truckId, status) => {

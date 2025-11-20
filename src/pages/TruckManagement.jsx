@@ -263,16 +263,48 @@ const TruckManagement = () => {
   };
 
   const handleBulkSubmit = async () => {
-    try {
-      await bulkAddTrucks(excelData, { companyId, userId });
+    const result = await bulkAddTrucks(excelData, { companyId, userId });
 
-      // Close preview modal on success
-      fetchTrucksByCompany(companyId);
-
-      setShowPreviewModal(false);
-    } catch (err) {
-      console.error("Bulk upload failed:", err);
+    // ❌ Backend returned error
+    if (result.error) {
+      toast.error(result.message);
+      return;
     }
+
+    const { insertedCount, failedCount, inserted, failed } = result.results;
+
+    // ❌ FAILED LIST — single line
+    if (failedCount > 0) {
+      const failedList = failed
+        .map((item, index) => `(VIN: ${item.vin_number})`)
+        .join("\n");
+
+      toast.error(`Failed (${failedCount}): ${failedList}`, {
+        autoClose: false,
+      });
+    }
+
+    // ✅ INSERTED LIST — single line
+    if (insertedCount > 0) {
+      const insertedList = inserted
+        .map((item, index) => `(VIN: ${item.vin_number})`)
+        .join("\n");
+
+      toast.success(`Inserted (${insertedCount}): ${insertedList}`, {
+        autoClose: false,
+      });
+    }
+
+    // 🔔 Summary message
+    toast.success(result.message);
+
+    // ✔ Close modal ONLY if at least some success
+    if (insertedCount > 0) {
+      setShowPreviewModal(false);
+    }
+
+    // ✔ Refresh truck list
+    await fetchTrucksByCompany(companyId);
   };
 
   const handlePerRowsChange = (rowsPerPage) => {
