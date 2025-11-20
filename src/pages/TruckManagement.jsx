@@ -351,7 +351,20 @@ const TruckManagement = () => {
         <div className="d-flex align-items-center gap-2">
           <button
             className="btn add-truck-btn-primary"
-            onClick={() => setShowAdd(true)}
+            onClick={() => {
+              setFormData({
+                truck_no: "",
+                vin_number: "",
+                truck_brand: "",
+                equipment_type: "",
+                sub_type: "",
+                truck_ownership: "",
+                model: "",
+                capacity: "",
+                status: "active", // 👈 always reset to active
+              });
+              setShowAdd(true);
+            }}
           >
             <i className="bi bi-plus-circle"></i> Add Equipment
           </button>

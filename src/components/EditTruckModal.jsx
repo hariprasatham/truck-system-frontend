@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Accordion } from "react-bootstrap";
+import useCompanyTruckStore from "../store/companyTruckStore";
 
 const EditTruckModal = ({
   showEdit,
@@ -15,11 +16,24 @@ const EditTruckModal = ({
       setFormData({ ...editData });
     }
   }, [editData]);
+  const { allbrands, fetchAllBrands } = useCompanyTruckStore();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  useEffect(() => {
+    const loadbrands = async () => {
+      try {
+        await fetchAllBrands();
+      } catch (err) {
+        toast.error(err.message || "Failed to load countries");
+      }
+    };
+
+    loadbrands();
+  }, [fetchAllBrands]);
 
   // Dynamically handle visibility for type sections
   useEffect(() => {
@@ -131,15 +145,17 @@ const EditTruckModal = ({
                         <select
                           name="truck_brand"
                           className="form-control"
-                          value={formData?.truck_brand}
+                          value={formData.truck_brand}
                           onChange={handleChange}
                           required
                         >
                           <option value="">-- Select Brand --</option>
-                          <option value="Ford">Ford</option>
-                          <option value="Volvo">Volvo</option>
-                          <option value="Kenworth">Kenworth</option>
-                          <option value="Peterbilt">Peterbilt</option>
+
+                          {allbrands.map((brand) => (
+                            <option key={brand.id} value={brand.name}>
+                              {brand.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
