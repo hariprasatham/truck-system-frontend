@@ -29,6 +29,7 @@ const TruckManagement = () => {
     currentTruck,
     deleteTruck,
     bulkAddTrucks,
+    fetchAllBrands,
   } = useCompanyTruckStore();
 
   const { user } = useUserStore();
@@ -201,24 +202,29 @@ const TruckManagement = () => {
 
   // Add Equipment
   const handleAdd = async (formData) => {
-    try {
-      await addTruck(formData, { companyId, userId });
-      await fetchTrucksByCompany(companyId);
-      setShowAdd(false);
-      setFormData({
-        truck_no: "",
-        vin_number: "",
-        truck_brand: "",
-        equipment_type: "",
-        sub_type: "",
-        truck_ownership: "",
-        model: "",
-        capacity: "",
-        status: "active",
-      });
-    } catch (error) {
-      toast.error(error.message || "Failed to add truck");
+    const result = await addTruck(formData, { companyId, userId });
+
+    console.log(result, "fddf");
+
+    if (!result) {
+      toast.error(result.message); // 🔥 shows "Duplicate VIN Number"
+      return; // ❌ modal stays open
     }
+
+    await fetchTrucksByCompany(companyId);
+
+    setShowAdd(false); // close modal ONLY on success
+    setFormData({
+      truck_no: "",
+      vin_number: "",
+      truck_brand: "",
+      equipment_type: "",
+      sub_type: "",
+      truck_ownership: "",
+      model: "",
+      capacity: "",
+      status: "active",
+    });
   };
 
   // Edit Equipment
@@ -258,7 +264,7 @@ const TruckManagement = () => {
 
   const handleBulkSubmit = async () => {
     try {
-      await bulkAddTrucks(excelData);
+      await bulkAddTrucks(excelData, { companyId, userId });
 
       // Close preview modal on success
       fetchTrucksByCompany(companyId);
@@ -350,7 +356,20 @@ const TruckManagement = () => {
         <div className="d-flex align-items-center gap-2">
           <button
             className="btn add-truck-btn-primary"
-            onClick={() => setShowAdd(true)}
+            onClick={() => {
+              setFormData({
+                truck_no: "",
+                vin_number: "",
+                truck_brand: "",
+                equipment_type: "",
+                sub_type: "",
+                truck_ownership: "",
+                model: "",
+                capacity: "",
+                status: "active", // 👈 always reset to active
+              });
+              setShowAdd(true);
+            }}
           >
             <i className="bi bi-plus-circle"></i> Add Equipment
           </button>
@@ -395,6 +414,7 @@ const TruckManagement = () => {
         handleAdd={handleAdd}
         formData={formData}
         setFormData={setFormData}
+        // fetchAllBrands={fetchAllBrands}
       />
 
       {/* Edit Equipment Modal */}
@@ -406,6 +426,7 @@ const TruckManagement = () => {
           editData={editData}
           formData={formData}
           setFormData={setFormData}
+          // fetchAllBrands={fetchAllBrands}
         />
       )}
 

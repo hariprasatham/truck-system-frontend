@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 
+import useCompanyTruckStore from "../store/companyTruckStore";
+
 const AddTruckModal = ({
   showAdd,
   setShowAdd,
@@ -12,7 +14,9 @@ const AddTruckModal = ({
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  const { allbrands, fetchAllBrands } = useCompanyTruckStore();
 
+  // console.log(allbrands, "klbrands");
   // Dynamically handle visibility for type sections
   useEffect(() => {
     const { equipment_type } = formData;
@@ -32,6 +36,18 @@ const AddTruckModal = ({
         forkliftTypeDiv.classList.remove("d-none");
     }
   }, [formData.equipment_type]);
+
+  useEffect(() => {
+    const loadbrands = async () => {
+      try {
+        await fetchAllBrands();
+      } catch (err) {
+        toast.error(err.message || "Failed to load countries");
+      }
+    };
+
+    loadbrands();
+  }, [fetchAllBrands]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -97,10 +113,12 @@ const AddTruckModal = ({
                           required
                         >
                           <option value="">-- Select Brand --</option>
-                          <option value="Ford">Ford</option>
-                          <option value="Volvo">Volvo</option>
-                          <option value="Kenworth">Kenworth</option>
-                          <option value="Peterbilt">Peterbilt</option>
+
+                          {allbrands.map((brand) => (
+                            <option key={brand.id} value={brand.name}>
+                              {brand.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
 

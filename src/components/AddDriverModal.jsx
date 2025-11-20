@@ -49,7 +49,6 @@ const AddDriverModal = ({
   }, [newDriver.country, fetchStatesByCountry]);
   const [errors, setErrors] = useState({});
 
-
   const onSubmit = (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -63,27 +62,36 @@ const AddDriverModal = ({
   const validateForm = () => {
     const newErrors = {};
     // Personal Details validation
-    if (!newDriver?.first_name?.trim()) newErrors.first_name = 'First name is required';
-    if (!newDriver?.last_name?.trim()) newErrors.last_name = 'Last name is required';
+    if (!newDriver?.first_name?.trim())
+      newErrors.first_name = "First name is required";
+    if (!newDriver?.last_name?.trim())
+      newErrors.last_name = "Last name is required";
     if (!newDriver?.phone?.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!/^\d{10}$/.test(newDriver.phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Invalid phone number format';
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(newDriver.phone.replace(/\D/g, ""))) {
+      newErrors.phone = "Invalid phone number format";
     }
     if (newDriver?.email && !/\S+@\S+\.\S+/.test(newDriver.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
     // License Details validation
-    if (!newDriver?.license?.trim()) newErrors.license = 'License number is required';
-    if (!newDriver?.country?.trim()) newErrors.country = 'Country is required';
-    if (!newDriver?.state?.trim()) newErrors.state = 'State/Province is required';
-    if (newDriver?.expiry_date && new Date(newDriver.expiry_date) < new Date()) {
-      newErrors.expiry_date = 'License cannot be expired';
+    if (!newDriver?.license?.trim())
+      newErrors.license = "License number is required";
+    if (!newDriver?.country?.trim()) newErrors.country = "Country is required";
+    if (!newDriver?.state?.trim())
+      newErrors.state = "State/Province is required";
+    if (
+      newDriver?.expiry_date &&
+      new Date(newDriver.expiry_date) < new Date()
+    ) {
+      newErrors.expiry_date = "License cannot be expired";
     }
     // Driver Type validation
-    if (!newDriver?.driver_type?.trim()) newErrors.driver_type = 'Driver type is required';
+    if (!newDriver?.driver_type?.trim())
+      newErrors.driver_type = "Driver type is required";
     // HOS & ELD Details validation
-    if (!newDriver?.timezone?.trim()) newErrors.timezone = 'Time zone is required';
+    if (!newDriver?.timezone?.trim())
+      newErrors.timezone = "Time zone is required";
     return newErrors;
   };
 
@@ -95,10 +103,10 @@ const AddDriverModal = ({
     } else {
       setNewDriver((prev) => ({ ...prev, [name]: value }));
     }
-    
+
     // Clear error for this field when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
