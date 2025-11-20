@@ -7,15 +7,31 @@ import DataTable from "react-data-table-component";
 import useCompanyDriverStore from "../store/companyDriverStore";
 import TableLoader from "../components/TableLoader";
 import EditDriverModal from "../components/EditDriverModal";
+import ImportDrivers from "../components/ImportDrivers";
+
 const DriverList = () => {
   // Dummy driver data
-  const { drivers, fetchDriversByCompany, fetchDriverById, deleteDriver, toggleDriverStatus, updateDriver, loading, addDriver, pagination, currentDriver, clearCurrentDriver } = useCompanyDriverStore();
-
+  const {
+    drivers,
+    fetchDriversByCompany,
+    fetchDriverById,
+    deleteDriver,
+    toggleDriverStatus,
+    updateDriver,
+    loading,
+    addDriver,
+    pagination,
+    currentDriver,
+    clearCurrentDriver,
+    importDrivers,
+  } = useCompanyDriverStore();
 
   const { companyId, userId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     fetchDriversByCompany(companyId, userId);
@@ -40,11 +56,32 @@ const DriverList = () => {
     yard_moves: true,
     timezone: "",
     personal_cmv: true,
-
-
   });
 
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleImport = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await importDrivers(file, { companyId, userId });
+      console.log(response);
+      if (response.errors.length > 0) {
+      } else {
+        await fetchDriversByCompany(companyId, userId);
+        setShowImportModal(false);
+      }
+    } catch (error) {
+      console.error("Error importing drivers:", error);
+      toast.error("Failed to import drivers");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFile(file);
+    }
+  };
 
   const columns = [
     {
@@ -76,8 +113,9 @@ const DriverList = () => {
       width: "10%",
       cell: (row) => (
         <span
-          className={`status-badge ${row.status === "active" ? "active" : "inactive"
-            }`}
+          className={`status-badge ${
+            row.status === "active" ? "active" : "inactive"
+          }`}
         >
           {row?.status?.charAt(0)?.toUpperCase() + row?.status?.slice(1)}
         </span>
@@ -133,32 +171,27 @@ const DriverList = () => {
           </button>
 
           {/* Delete (except admin) */}
-          <button
-            className="btn-action"
-            onClick={() => handleDelete(row.id)}
-          >
+          <button className="btn-action" onClick={() => handleDelete(row.id)}>
             <i className="bi bi-trash"></i>
           </button>
-
-
         </>
       ),
     },
-  ]
+  ];
 
   const handleToggleStatus = async (id, status) => {
     if (status === "active") {
-      status = "inactive"
+      status = "inactive";
     } else {
-      status = "active"
+      status = "active";
     }
-    await toggleDriverStatus(id, status)
-    await fetchDriversByCompany(companyId, userId)
+    await toggleDriverStatus(id, status);
+    await fetchDriversByCompany(companyId, userId);
   };
 
   const handleDelete = async (id) => {
-    await deleteDriver(id)
-    await fetchDriversByCompany(companyId, userId)
+    await deleteDriver(id);
+    await fetchDriversByCompany(companyId, userId);
   };
 
   const handleEditDriver = async (id) => {
@@ -175,17 +208,16 @@ const DriverList = () => {
         setShowEditModal(true);
       }
     } catch (error) {
-      console.error('Error fetching driver:', error);
+      console.error("Error fetching driver:", error);
       // Optionally show an error message to the user
-      toast.error('Failed to load driver data');
+      toast.error("Failed to load driver data");
     }
   };
 
-
   const handleUpdateDriver = async () => {
-    await updateDriver(newDriver.id, newDriver)
-    await fetchDriversByCompany(companyId, userId)
-    setShowEditModal(false)
+    await updateDriver(newDriver.id, newDriver);
+    await fetchDriversByCompany(companyId, userId);
+    setShowEditModal(false);
     setNewDriver({
       first_name: "",
       last_name: "",
@@ -204,14 +236,13 @@ const DriverList = () => {
       yard_moves: true,
       timezone: "",
       personal_cmv: true,
-    })
-  }
+    });
+  };
 
   // Add new driver locally
   const handleAddDriver = async () => {
-
-    await addDriver(newDriver)
-    await fetchDriversByCompany(companyId, userId)
+    await addDriver(newDriver);
+    await fetchDriversByCompany(companyId, userId);
 
     setNewDriver({
       first_name: "",
@@ -231,24 +262,21 @@ const DriverList = () => {
       yard_moves: true,
       timezone: "",
       personal_cmv: true,
-
     });
     setShowAddModal(false);
   };
 
-
   const handlePageChange = (page) => {
-    fetchDriversByCompany(companyId, userId, page)
+    fetchDriversByCompany(companyId, userId, page);
   };
 
   const handlePerRowsChange = (rowsPerPage) => {
-    fetchDriversByCompany(companyId, userId, 1, rowsPerPage)
+    fetchDriversByCompany(companyId, userId, 1, rowsPerPage);
   };
 
   const handleViewDriver = async (id) => {
-        navigate(`/companies/${companyId}/user-management/${userId}/drivers/${id}`);
-
-  }
+    navigate(`/companies/${companyId}/user-management/${userId}/drivers/${id}`);
+  };
   return (
     <div className="content my-4">
       {/* Header Section */}
@@ -264,9 +292,12 @@ const DriverList = () => {
           >
             <i className="bi bi-person-plus"></i> Add Driver
           </Button>
-          <Button variant="secondary" className="ms-2" onClick={() => navigate(-1)}>
-            <i className="bi bi-arrow-left"></i> Back to Users
-          </Button>
+          <button
+            className="btn btn-secondary ms-2"
+            onClick={() => setShowImportModal(true)}
+          >
+            <i className="bi bi-upload"></i> Import Driver
+          </button>
         </div>
       </div>
 
@@ -278,8 +309,10 @@ const DriverList = () => {
 
         <div className="card-body p-0">
           <div className="table-responsive">
-            <DataTable columns={columns} data={drivers} 
-            pagination
+            <DataTable
+              columns={columns}
+              data={drivers}
+              pagination
               paginationServer={true}
               paginationTotalRows={pagination.total}
               paginationRowsPerPage={pagination.limit}
@@ -352,6 +385,14 @@ const DriverList = () => {
         newDriver={newDriver}
         setNewDriver={setNewDriver}
         handleEditDriver={handleUpdateDriver}
+        loading={loading}
+      />
+
+      <ImportDrivers
+        showImportModal={showImportModal}
+        setShowImportModal={setShowImportModal}
+        onSubmit={handleImport}
+        onChange={handleFileChange}
         loading={loading}
       />
     </div>

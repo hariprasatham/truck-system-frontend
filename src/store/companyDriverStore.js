@@ -216,16 +216,18 @@ const useCompanyDriverStore = create((set, get) => ({
     }
   },
 
-  importDrivers: async (file) => {
+  importDrivers: async (file, params = {}) => {
     set({ loading: true, error: null });
     try {
       const formData = new FormData();
       formData.append('file', file);
       //add headers
       const response = await api.post('/driver/bulkCreate', formData, {
+        
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        params
       });
       set({ loading: false, importDriverError: response.data.results.errors });
       
