@@ -7,7 +7,7 @@ const useCompanyTruckStore = create((set, get) => ({
   trucks: [],
   currentTruck: null,
   loading: false,
-  error: null,
+  truckError: null,
   pagination: {
     currentPage: 1,
     totalPages: 1,
@@ -19,7 +19,7 @@ const useCompanyTruckStore = create((set, get) => ({
   // Actions
   // Get all brands
   fetchAllBrands: async () => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const response = await api.get(`/truck/get/allBrands`);
       
@@ -30,7 +30,7 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       set({ 
-        error: error.response?.data?.message || 'Failed to fetch brands',
+        truckError: error.response?.data?.message || 'Failed to fetch brands',
         loading: false 
       });
       throw error;
@@ -38,31 +38,29 @@ const useCompanyTruckStore = create((set, get) => ({
   },
 
   // Add brand
-  addBrand: async (brandData) => {
-    set({ loading: true, error: null });
+  addTruck: async (data, params) => {
+    set({ loading: true, truckError: null });
   
     try {
-      const response = await api.post(`/truck/addBrand`, brandData);
+      const res = await api.post(`/truck/createTruck`, data, { params });
   
-      const { allbrands } = get();
-  
-      set({
-        allbrands: [...allbrands, response.data.results], // append object
-        loading: false
-      });
-  
-      return response.data;
+      set({ loading: false });
+      return res.data
     } catch (error) {
+      const message = error.response?.data?.message || "Failed to add truck";
+  
       set({
-        error: error.response?.data?.message || 'Failed to add brand',
-        loading: false 
+        truckError: message,
+        loading: false,
       });
-      throw error;
+  
+      return { success: false, message }; // ⚠️ no throw
     }
   },
   
+  
   updateBrand: async (brandId, brandData) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
   
     try {
       const response = await api.put(`/truck/brandupdate/${brandId}`, brandData);
@@ -85,7 +83,7 @@ const useCompanyTruckStore = create((set, get) => ({
   
     } catch (error) {
       set({
-        error: error.response?.data?.message || "Failed to update brand",
+        truckError: error.response?.data?.message || "Failed to update brand",
         loading: false,
       });
       throw error;
@@ -95,7 +93,7 @@ const useCompanyTruckStore = create((set, get) => ({
   
 
   deleteBrand: async (brandId) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
   
     try {
       const response = await api.delete(`/truck/delete/brand/${brandId}`);
@@ -115,7 +113,7 @@ const useCompanyTruckStore = create((set, get) => ({
   
     } catch (error) {
       set({
-        error: error.response?.data?.message || "Failed to delete brand",
+        truckError: error.response?.data?.message || "Failed to delete brand",
         loading: false,
       });
       throw error;
@@ -125,7 +123,7 @@ const useCompanyTruckStore = create((set, get) => ({
 
   // Fetch all trucks for a company with pagination
   fetchTrucksByCompany: async (companyId, params = {}) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const { page = get().pagination.page, limit = get().pagination.limit, ...filters } = params;
       const response = await api.get(`/company/truck/${companyId}`, {
@@ -145,7 +143,7 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       set({ 
-        error: error.response?.data?.message || 'Failed to fetch trucks',
+        truckError: error.response?.data?.message || 'Failed to fetch trucks',
         loading: false 
       });
       throw error;
@@ -154,7 +152,7 @@ const useCompanyTruckStore = create((set, get) => ({
 
   // Fetch a single truck by ID
   fetchTruckById: async (truckId) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const response = await api.get(`/truck/${truckId}`);
       set({ 
@@ -164,7 +162,7 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data.results;
     } catch (error) {
       set({ 
-        error: error.response?.data?.message || 'Failed to fetch truck',
+        truckError: error.response?.data?.message || 'Failed to fetch truck',
         loading: false 
       });
       throw error;
@@ -173,7 +171,7 @@ const useCompanyTruckStore = create((set, get) => ({
 
   // Add a new truck
   addTruck: async (truckData, params = {}) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const response = await api.post('/truck/register', truckData, {params});
       set({loading: false});
@@ -182,17 +180,23 @@ const useCompanyTruckStore = create((set, get) => ({
 
       return response.data;
     } catch (error) {
+      const message = error?.response?.data?.message || "Failed to add truck";
+
+  // Show toast here
+      toast.error(message);
+
+      console.log(error.response.data.message)
       set({ 
-        error: error.response?.data?.message || 'Failed to add truck',
+        truckError: error?.response?.data?.message || 'Failed to add truck',
         loading: false 
       });
-      throw error;
+      // throw error;
     }
   },
 
 
   bulkAddTrucks: async (truckList, params = {}) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
   
     try {
       const response = await api.post('/truck/register/bulk', truckList, { params });
@@ -203,7 +207,7 @@ const useCompanyTruckStore = create((set, get) => ({
     } catch (error) {
       set({
         loading: false,
-        error: error.response?.data?.message || "Failed to add trucks",
+        truckError: error.response?.data?.message || "Failed to add trucks",
       });
       throw error;
     }
@@ -211,7 +215,7 @@ const useCompanyTruckStore = create((set, get) => ({
   
 
   updateTruck: async (truckId, truckData) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const response = await api.put(`/truck/${truckId}`, truckData);
       set({loading: false});
@@ -219,7 +223,7 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       set({ 
-        error: error.response?.data?.message || 'Failed to update truck',
+        truckError: error.response?.data?.message || 'Failed to update truck',
         loading: false 
       });
       throw error;
@@ -227,7 +231,7 @@ const useCompanyTruckStore = create((set, get) => ({
   },
 
   deleteTruck: async (truckId) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const response = await api.delete(`/truck/${truckId}`);
       set({loading: false});
@@ -235,7 +239,7 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       set({ 
-        error: error.response?.data?.message || 'Failed to delete truck',
+        truckError: error.response?.data?.message || 'Failed to delete truck',
         loading: false 
       });
       throw error;
@@ -244,7 +248,7 @@ const useCompanyTruckStore = create((set, get) => ({
 
   //change status
   changeTruckStatus: async (truckId, status) => {
-    set({ loading: true, error: null });
+    set({ loading: true, truckError: null });
     try {
       const response = await api.put(`/truck/changeStatus/${truckId}`, { status });
       set({loading: false});
@@ -252,14 +256,14 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       set({ 
-        error: error.response?.data?.message || 'Failed to change truck status',
+        truckError: error.response?.data?.message || 'Failed to change truck status',
         loading: false 
       });
       throw error;
     }
   },
 
-    clearError: () => set({ error: null }),
+    clearError: () => set({ truckError: null }),
     clearCurrentTruck: () => set({ currentTruck: null }),
     
 }));

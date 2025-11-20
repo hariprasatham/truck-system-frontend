@@ -202,24 +202,29 @@ const TruckManagement = () => {
 
   // Add Equipment
   const handleAdd = async (formData) => {
-    try {
-      await addTruck(formData, { companyId, userId });
-      await fetchTrucksByCompany(companyId);
-      setShowAdd(false);
-      setFormData({
-        truck_no: "",
-        vin_number: "",
-        truck_brand: "",
-        equipment_type: "",
-        sub_type: "",
-        truck_ownership: "",
-        model: "",
-        capacity: "",
-        status: "active",
-      });
-    } catch (error) {
-      toast.error(error.message || "Failed to add truck");
+    const result = await addTruck(formData, { companyId, userId });
+
+    console.log(result, "fddf");
+
+    if (!result) {
+      toast.error(result.message); // 🔥 shows "Duplicate VIN Number"
+      return; // ❌ modal stays open
     }
+
+    await fetchTrucksByCompany(companyId);
+
+    setShowAdd(false); // close modal ONLY on success
+    setFormData({
+      truck_no: "",
+      vin_number: "",
+      truck_brand: "",
+      equipment_type: "",
+      sub_type: "",
+      truck_ownership: "",
+      model: "",
+      capacity: "",
+      status: "active",
+    });
   };
 
   // Edit Equipment
@@ -259,7 +264,7 @@ const TruckManagement = () => {
 
   const handleBulkSubmit = async () => {
     try {
-      await bulkAddTrucks(excelData);
+      await bulkAddTrucks(excelData, { companyId, userId });
 
       // Close preview modal on success
       fetchTrucksByCompany(companyId);

@@ -152,7 +152,7 @@ const Brand = () => {
     <div className="content">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="mb-0">Menu Management</h3>
+        <h3 className="mb-0">Brand</h3>
 
         <Button
           variant="primary"
@@ -161,7 +161,7 @@ const Brand = () => {
             setShowAdd(true); // open modal for ADD
           }}
         >
-          <i className="bi bi-plus-circle"></i> Add Menu
+          <i className="bi bi-plus-circle"></i> Add Brand
         </Button>
       </div>
 
