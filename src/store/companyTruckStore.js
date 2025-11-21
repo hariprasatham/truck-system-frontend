@@ -37,26 +37,56 @@ const useCompanyTruckStore = create((set, get) => ({
     }
   },
 
-  // Add brand
-  addTruck: async (data, params) => {
+
+  addBrand: async (brandData) => {
     set({ loading: true, truckError: null });
   
     try {
-      const res = await api.post(`/truck/createTruck`, data, { params });
+      const response = await api.post(`/truck/addBrand`, brandData);
   
-      set({ loading: false });
-      return res.data
+      const { allbrands } = get();
+  
+      set({
+        allbrands: [...allbrands, response.data.results],
+        loading: false
+      });
+  
+      return { success: true, data: response.data.results };
+  
     } catch (error) {
-      const message = error.response?.data?.message || "Failed to add truck";
+      const message =
+        error?.response?.data?.message || "Failed to add brand";
   
       set({
         truckError: message,
-        loading: false,
+        loading: false
       });
   
-      return { success: false, message }; // ⚠️ no throw
+      return { success: false, message }; // <── return clean error, don't throw
     }
   },
+  
+
+  // Add brand
+  // addTruck: async (data, params) => {
+  //   set({ loading: true, truckError: null });
+  
+  //   try {
+  //     const res = await api.post(`/truck/createTruck`, data, { params });
+  
+  //     set({ loading: false });
+  //     return res.data
+  //   } catch (error) {
+  //     const message = error.response?.data?.message || "Failed to add truck";
+  
+  //     set({
+  //       truckError: message,
+  //       loading: false,
+  //     });
+  
+  //     return { success: false, message }; // ⚠️ no throw
+  //   }
+  // },
   
   
   updateBrand: async (brandId, brandData) => {
