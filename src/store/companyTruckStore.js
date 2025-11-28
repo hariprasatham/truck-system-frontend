@@ -15,6 +15,7 @@ const useCompanyTruckStore = create((set, get) => ({
     itemsPerPage: 10,
   },
   allbrands: [],
+  fuelUnits: [],
 
   // Actions
   // Get all brands
@@ -36,6 +37,7 @@ const useCompanyTruckStore = create((set, get) => ({
       throw error;
     }
   },
+  
 
 
   addBrand: async (brandData) => {
@@ -281,7 +283,40 @@ const useCompanyTruckStore = create((set, get) => ({
       return { error: true, message }; // 🔥 return safe object instead of throwing
     }
   },
-  
+
+  uploadFuelUnits: async (data) => {
+    set({ loading: true, truckError: null });
+    try {
+      const response = await api.post("/fuel/upload_fuel_unit", data);
+      set({ loading: false });
+      return response.data; // return data for component
+    } catch (error) {
+      const message = error.response?.data?.message || "Upload failed";
+      set({ loading: false, truckError: message });
+      throw error; // allow component to catch it
+    }
+  },
+
+  // Fetch fuel units with optional filters
+  fetchFuelUnits: async (filters = {}) => {
+    set({ loading: true, truckError: null });
+    try {
+      const params = {};
+      if (filters.state) params.state = filters.state;
+      if (filters.unit_no) params.unit_no = filters.unit_no;
+      if (filters.fromDate) params.fromDate = filters.fromDate;
+      if (filters.toDate) params.toDate = filters.toDate;
+
+      const response = await api.get("/fuel/fetch_fuel_units", { params });
+
+      set({ fuelUnits: response.data.results || [], loading: false });
+      return response.data.results || [];
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to fetch fuel units";
+      set({ loading: false, truckError: message });
+      throw error;
+    }
+  },
 
   //change status
   changeTruckStatus: async (truckId, status) => {
