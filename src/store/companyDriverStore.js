@@ -154,35 +154,50 @@ const useCompanyDriverStore = create((set, get) => ({
 
   uploadMedicalReport: async (driverId, reportData) => {
     set({ loading: true, error: null });
+  
     try {
-      const response = await api.post(`driver/uploadDrugReport/${driverId}`, reportData);
-      set({loading: false});
-      toast.success('Medical report uploaded successfully');
+      const response = await api.post(
+        `driver/uploadDrugReport/${driverId}`,
+        reportData
+      );
+  
+      toast.success(response.data.message || "Medical report uploaded successfully");
+  
+      set({ loading: false });
       return response.data;
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to upload medical report',
-        loading: false 
-      });
+      const msg = error.response?.data?.message || "Failed to upload medical report";
+  
+      // ❌ No missing fields displayed
+      toast.error(msg);
+  
+      set({ error: msg, loading: false });
       throw error;
     }
   },
+  
 
   uploadDriverLicense: async (licenseData) => {
     set({ loading: true, error: null });
+  
     try {
       const response = await api.post(`driver/uploadLicense`, licenseData);
-      set({loading: false});
-      toast.success('Driver license uploaded successfully');
+  
+      toast.success(response.data.message || "Driver license uploaded successfully");
+  
+      set({ loading: false });
       return response.data;
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to upload driver license',
-        loading: false 
-      });
+      const msg = error.response?.data?.message || "Failed to upload driver license";
+  
+      // ❌ No missing fields displayed
+      toast.error(msg);
+  
+      set({ error: msg, loading: false });
       throw error;
     }
   },
+  
 
   downloadMedicalReport: async (pdfPath) => {
     set({ loading: true, error: null });
