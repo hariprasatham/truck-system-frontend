@@ -102,3 +102,17 @@
     box-shadow: var(--bs-accordion-btn-focus-box-shadow);
 }
 
+.table-scroll-container {
+  max-height: 550px;     /* Scrollable height */
+  overflow-y: auto;      /* Enable vertical scrolling */
+  margin-bottom: 1rem;   /* Space at the bottom */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.table-scroll-container table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;   /* Bootstrap light gray */
+  z-index: 2;
+}
