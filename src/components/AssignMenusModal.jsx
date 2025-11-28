@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import useMenuStore from "../store/menuStore";
 const AssignMenusModal = ({ show, onClose, userId }) => {
   const [selectedMenus, setSelectedMenus] = useState([]);
-  const { fetchAssignedMenus, assignedMenus, allMenus, updateUserMenus, error } = useMenuStore();
+  const {
+    fetchAssignedMenus,
+    assignedMenus,
+    allMenus,
+    updateUserMenus,
+    error,
+  } = useMenuStore();
 
   // Simulate previously assigned menus for the user
   useEffect(() => {
@@ -12,18 +18,16 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
       try {
         await fetchAssignedMenus(userId);
         // Use the response directly to avoid race conditions
-
       } catch (error) {
-        console.error('Error loading assigned menus:', error);
+        console.error("Error loading assigned menus:", error);
       }
     };
 
     loadAssignedMenus();
   }, [userId]);
 
-
   useEffect(() => {
-    setSelectedMenus(assignedMenus.map(menu => menu.id));
+    setSelectedMenus(assignedMenus.map((menu) => menu.id));
   }, [assignedMenus]);
 
   const handleCheckboxChange = (menuId) => {
@@ -42,7 +46,7 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
         setSelectedMenus([]);
       }
     } catch (error) {
-      console.error('Error updating user menus:', error);
+      console.error("Error updating user menus:", error);
     }
   };
 
@@ -58,44 +62,54 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
             <h5 className="modal-title">
               <i className="bi bi-list-check me-2"></i>Assign Menus
             </h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+            ></button>
           </div>
 
           <div className="modal-body">
             <p className="mb-3 text-muted">
               Assign access menus for <strong>User ID {userId}</strong>
             </p>
-            {error && (
-              <div className="alert alert-danger">
-                {error}
-              </div>
-            )}
+            {error && <div className="alert alert-danger">{error}</div>}
 
             <ul className="list-group">
-              {allMenus.map((menu, idx) => (
-                <li
-                  key={idx}
-                  className="list-group-item d-flex align-items-center justify-content-between"
-                >
-                  <div className="d-flex align-items-center gap-2">
-                    <i className={`${menu?.icon} text-success`}></i>
-                    <span>{menu?.title}</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={selectedMenus.includes(menu?.id)}
-                    onChange={() => handleCheckboxChange(menu?.id)}
-                  />
-                </li>
-              ))}
+              {allMenus
+                .filter((menu) => menu.role != "admin")
+                .map((menu, idx) => (
+                  <li
+                    key={idx}
+                    className="list-group-item d-flex align-items-center justify-content-between"
+                  >
+                    <div className="d-flex align-items-center gap-2">
+                      <i className={`${menu?.icon} text-success`}></i>
+                      <span>{menu?.title}</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={selectedMenus.includes(menu?.id)}
+                      onChange={() => handleCheckboxChange(menu?.id)}
+                    />
+                  </li>
+                ))}
             </ul>
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onClose}
+            >
               Cancel
             </button>
-            <button type="button" className="btn btn-success" onClick={async () => handleSave()}>
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={async () => handleSave()}
+            >
               Save Changes
             </button>
           </div>
