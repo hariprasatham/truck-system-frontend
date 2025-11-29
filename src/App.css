@@ -102,6 +102,7 @@
     box-shadow: var(--bs-accordion-btn-focus-box-shadow);
 }
 
+<<<<<<< Updated upstream
 .table-scroll-container {
   max-height: 550px;     /* Scrollable height */
   overflow-y: auto;      /* Enable vertical scrolling */
@@ -116,3 +117,7 @@
   background: #f8f9fa;   /* Bootstrap light gray */
   z-index: 2;
 }
+=======
+
+
+>>>>>>> Stashed changes
