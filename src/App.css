@@ -102,6 +102,10 @@
     box-shadow: var(--bs-accordion-btn-focus-box-shadow);
 }
 
+
+
+
+
 .table-scroll-container {
   max-height: 550px;     /* Scrollable height */
   overflow-y: auto;      /* Enable vertical scrolling */

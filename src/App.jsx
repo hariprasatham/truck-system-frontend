@@ -21,6 +21,7 @@ import FuelInvoiceManagement from "./pages/FuelInvoiceManagement";
 import ViewFuelData from "./pages/ViewFuelData";
 import PreEmploymentCheck from "./pages/PreEmploymentCheck";
 import DriverList from "./pages/DriverList";
+import IncidentManagement from "./pages/IncidentManagement";
 // import GlobalLoader from "./components/GlobalLoader";
 
 import useMenuStore from "./store/menuStore";
