@@ -21,6 +21,7 @@ import FuelInvoiceManagement from "./pages/FuelInvoiceManagement";
 import ViewFuelData from "./pages/ViewFuelData";
 import PreEmploymentCheck from "./pages/PreEmploymentCheck";
 import DriverList from "./pages/DriverList";
+import IncidentManagement from "./pages/IncidentManagement";
 // import GlobalLoader from "./components/GlobalLoader";
 
 import useMenuStore from "./store/menuStore";
@@ -33,6 +34,7 @@ import PreEmploymentApplicationList from "./pages/PreEmploymentApplicationList";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Brand from "./pages/Brand";
 import FuelUnit from "./pages/FuelUnit";
+import IncidentDetails from "./pages/IncidentDetails";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
@@ -41,64 +43,41 @@ const App = () => {
     <>
       {/* <GlobalLoader /> */}
       <ErrorBoundary>
-        <Router>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            {/* Public route that should not be accessible when logged in */}
-            <Route element={<PublicRoute />}>
-              <Route path="/login" element={<Login />} />
-            </Route>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          {/* Public route that should not be accessible when logged in */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+          </Route>
 
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route element={<Layout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/companies" element={<Companies />} />
-                <Route
-                  path="/companies/:companyId/user-management"
-                  element={<UserManagement />}
-                />
-                <Route
-                  path="/companies/:companyId/user-management/:userId/drivers"
-                  element={<DriverList />}
-                />
-                <Route
-                  path="/companies/:companyId/user-management/:userId/drivers/:driverId"
-                  element={<DriverDetails />}
-                />
-                <Route
-                  path="/companies/:companyId/user-management/:userId/trucks"
-                  element={<TruckManagement />}
-                />
 
-                <Route
-                  path="/driver-management"
-                  element={<DriverManagement />}
-                />
-                <Route path="/menu-management" element={<MenuManagement />} />
-                <Route path="/truck-management" element={<TruckManagement />} />
-                <Route
-                  path="/fuel-invoice-management"
-                  element={<FuelInvoiceManagement />}
-                />
-                <Route
-                  path="/view-fuel-data/:fuelId"
-                  element={<ViewFuelData />}
-                />
-                <Route
-                  path="/pre-employment-application/form"
-                  element={<PreEmploymentCheck />}
-                />
-                <Route
-                  path="/pre-employment-application"
-                  element={<PreEmploymentApplicationList />}
-                />
-                <Route path="/brand" element={<Brand />} />
-                <Route path="/fuelunit" element={<FuelUnit />} />
-                {/* <Route path="/drivers" element={<DriverManagement />} /> */}
-                {/* <Route path="/profile" element={<Profile />} /> */}
-              </Route>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/companies/:companyId/user-management" element={<UserManagement />} />
+              <Route path="/companies/:companyId/user-management/:userId/drivers" element={<DriverList />} />
+              <Route path="/companies/:companyId/user-management/:userId/drivers/:driverId" element={<DriverDetails />} />
+              <Route path="/companies/:companyId/user-management/:userId/trucks" element={<TruckManagement />} />
+
+              <Route path="/driver-management" element={<DriverManagement />} />
+              <Route path="/menu-management" element={<MenuManagement />} />
+              <Route path="/truck-management" element={<TruckManagement />} />
+              <Route path="/fuel-invoice-management" element={<FuelInvoiceManagement />} />
+              <Route path="/view-fuel-data/:fuelId" element={<ViewFuelData />} />
+              <Route path="/pre-employment-application/form" element={<PreEmploymentCheck />} />
+              <Route path="/pre-employment-application" element={<PreEmploymentApplicationList />} />
+              <Route path="/brand" element={<Brand />} />
+              <Route path="/incident-management" element={<IncidentManagement />} />
+              <Route path="/incident-management/:incidentId" element={<IncidentDetails />} />
+              <Route path="/fuelunit" element={<FuelUnit />} />
+              
+              {/* <Route path="/drivers" element={<DriverManagement />} /> */}
+              {/* <Route path="/profile" element={<Profile />} /> */}
             </Route>
+          </Route>
 
             {/* Catch-all for unmatched routes */}
             <Route path="*" element={<NotFound />} />
