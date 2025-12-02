@@ -313,7 +313,7 @@ const useCompanyTruckStore = create((set, get) => ({
       return response.data.results || [];
     } catch (error) {
       const message = error.response?.data?.message || "Failed to fetch fuel units";
-      set({ loading: false, truckError: message });
+      set({ loading: false, truckError: message, fuelUnits: [] });
       throw error;
     }
   },

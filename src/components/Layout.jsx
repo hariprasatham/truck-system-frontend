@@ -39,7 +39,7 @@ const Layout = () => {
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       </div>
 
-      <div className={`flex-grow-1`} style={{ minHeight: "100vh" }}>
+      <div  style={{ minHeight: "100vh", flex: 1 }}>
         {/* <button
           onClick={() => setCollapsed(!collapsed)}
           className="btn btn-light position-absolute"
