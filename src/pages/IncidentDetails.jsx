@@ -191,7 +191,7 @@ useEffect(() => {
     </Card>
   );
   return (
-    <div className="content flex-grow-1 p-4">
+    <div className="content ">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 className="mb-0">Incident Report #{incident.id}</h3>
         <div>

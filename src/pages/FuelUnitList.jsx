@@ -196,7 +196,7 @@ const FuelUnitList = () => {
           </Table>
         </div>
       ) : (
-        <p>No data found.</p>
+        <p className="text-center">No data found.</p>
       )}
     </div>
   );
