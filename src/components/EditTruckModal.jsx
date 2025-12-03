@@ -65,6 +65,7 @@ const EditTruckModal = ({
     setShowEdit(false);
     setFormData({
       truck_no: "",
+      plate_no: "",
       truck_brand: "",
       equipment_type: "",
       sub_type: "",
@@ -78,6 +79,7 @@ const EditTruckModal = ({
   const handleExited = () => {
     setFormData({
       truck_no: "",
+      plate_no: "",
       truck_brand: "",
       equipment_type: "",
       sub_type: "",
@@ -136,6 +138,28 @@ const EditTruckModal = ({
                               },
                             })
                           }
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label>Plate No</label>
+                        <input
+                          type="text"
+                          name="plate_no"
+                          className="form-control"
+                          placeholder="Enter Plate Number"
+                          value={formData?.plate_no}
+                          // onChange={handleChange}
+                          onChange={(e) =>
+                            handleChange({
+                              target: {
+                                name: "plate_no",
+                                value: e.target.value.toUpperCase(), // 🔥 Always uppercase
+                              },
+                            })
+                          }
+                          style={{ textTransform: "uppercase" }}
                           required
                         />
                       </div>

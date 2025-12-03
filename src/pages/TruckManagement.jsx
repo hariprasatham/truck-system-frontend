@@ -105,6 +105,11 @@ const TruckManagement = () => {
       sortable: true,
     },
     {
+      name: "Plate No",
+      selector: (row) => row.plate_no,
+      sortable: true,
+    },
+    {
       name: "Equipment Type",
       selector: (row) => row.equipment_type,
       sortable: true,
@@ -216,6 +221,7 @@ const TruckManagement = () => {
     setShowAdd(false); // close modal ONLY on success
     setFormData({
       truck_no: "",
+      plate_no: "",
       vin_number: "",
       truck_brand: "",
       equipment_type: "",
@@ -237,6 +243,7 @@ const TruckManagement = () => {
       setShowEdit(false);
       setFormData({
         truck_no: "",
+        plate_no: "",
         vin_number: "",
         truck_brand: "",
         equipment_type: "",
@@ -317,6 +324,7 @@ const TruckManagement = () => {
 
   const requiredHeaders = [
     "Equipment Number",
+    "Plate No",
     "Equipment Brand",
     "Equipment Type",
     "Equipment Sub Type",
