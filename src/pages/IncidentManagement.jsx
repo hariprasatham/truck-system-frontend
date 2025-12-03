@@ -22,9 +22,6 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
     getAllIncidents();
   }, [getAllIncidents]);
 
-  if (loading && !incidents?.length) {
-    return <GlobalLoader />;
-  }
 
   const handleViewIncidentReport = (id) => {
     navigate(`/incident-management/${id}`);
