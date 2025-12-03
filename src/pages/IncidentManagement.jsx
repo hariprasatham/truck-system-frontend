@@ -1,7 +1,7 @@
 import DataTable from "react-data-table-component";
 import GlobalLoader from "../components/GlobalLoader"
 import useIncidentManagementStore from "../store/incidentManagementStore"
-import { useEffect } from "react"
+import { useEffect, useCallback } from "react"
 import TableLoader from "../components/TableLoader";
 import { useNavigate } from "react-router-dom";
 
@@ -9,13 +9,19 @@ const IncidentManagement = () => {
   const { incidents, loading, getAllIncidents, pagination } = useIncidentManagementStore();
   const navigate = useNavigate();
 
+  const handlePageChange = useCallback((page) => {
+  getAllIncidents({ page: page });
+}, [getAllIncidents]);
+
+const handlePerRowsChange = useCallback((newPerPage, page) => {
+  getAllIncidents({ page, limit: newPerPage });
+}, [getAllIncidents]);
+
+
   useEffect(() => {
     getAllIncidents();
-  }, []);
+  }, [getAllIncidents]);
 
-  if (loading && !incidents?.length) {
-    return <GlobalLoader />;
-  }
 
   const handleViewIncidentReport = (id) => {
     navigate(`/incident-management/${id}`);
@@ -33,7 +39,7 @@ const IncidentManagement = () => {
       name: "accident_date",
       selector: (row) => row?.accident_date,
       sortable: true,
-   
+
     },
     {
       name: "accident_time",
@@ -51,9 +57,8 @@ const IncidentManagement = () => {
       sortable: true,
       cell: (row) => (
         <span
-          className={`status-badge ${
-            row.status === "active" ? "active" : "inactive"
-          }`}
+          className={`status-badge ${row.status === "active" ? "active" : "inactive"
+            }`}
         >
           {row?.status?.charAt(0)?.toUpperCase() + row?.status?.slice(1)}
         </span>
@@ -78,7 +83,7 @@ const IncidentManagement = () => {
           {/* edit */}
           <button
             className="btn-action"
-            // onClick={() => handleEditDriver(row.id)}
+          // onClick={() => handleEditDriver(row.id)}
           >
             <i className="bi bi-pencil"></i>
           </button>
@@ -91,8 +96,8 @@ const IncidentManagement = () => {
           </button>
 
           {/* Delete (except admin) */}
-          <button className="btn-action" 
-        //   onClick={() => handleDelete(row.id)}
+          <button className="btn-action"
+          //   onClick={() => handleDelete(row.id)}
           >
             <i className="bi bi-trash"></i>
           </button>
@@ -101,16 +106,12 @@ const IncidentManagement = () => {
     },
   ];
 
-  const handlePageChange = ({page}) => {
-    getAllIncidents({ page });
-  };
+  console.log("Pagination:", pagination);
 
-  const handlePerRowsChange = (rowsPerPage) => {
-    getAllIncidents({ page: 1, limit: rowsPerPage });
-  };
+
 
   return (
-        <div className="content">
+    <div className="content">
       <GlobalLoader loading={false} />
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -119,7 +120,7 @@ const IncidentManagement = () => {
         </div>
       </div>
 
-            {/* Incidents Table */}
+      {/* Incidents Table */}
       <div className="card shadow-sm border">
 
         <div className="card-body p-0 rounded-3 overflow-hidden">
@@ -130,6 +131,7 @@ const IncidentManagement = () => {
               pagination
               paginationServer={true}
               paginationTotalRows={pagination.totalItems}
+              paginationDefaultPage={pagination.currentPage}
               paginationRowsPerPage={pagination.itemsPerPage}
               paginationRowsPerPageOptions={[5, 10, 20]}
               onChangePage={handlePageChange}
@@ -140,7 +142,7 @@ const IncidentManagement = () => {
           </div>
         </div>
       </div>
-      
+
 
     </div>
   )
