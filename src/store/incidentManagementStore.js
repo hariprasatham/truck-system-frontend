@@ -16,35 +16,36 @@ const useIncidentManagementStore = create(
     },
 
     getAllIncidents: async (params = {}) => {
-      try {
-        set({ loading: true, error: null });
-        const { page = get().pagination.currentPage, limit = get().pagination.itemsPerPage } = params;
-        const response = await api.get("/accidentReport/all", {
-          params: { page, limit }
-        });
+      const state = get();
+      if (state.loading) return;
 
+      set({ loading: true });
+      try {
+        const { page = state.pagination.currentPage, limit = state.pagination.itemsPerPage } = params;
+        const response = await api.get("/accidentReport/all", { 
+          params: { page, limit } 
+        });
+        
+        const { pagination, accidentReports } = response.data.results;
+        
         set({
-          incidents: response.data.results.accidentReports || [],
+          incidents: Array.isArray(accidentReports) ? accidentReports : [],
           pagination: {
-            currentPage: response.data.results.pagination?.currentPage || currentPage,
-            itemsPerPage: response.data.results.pagination?.itemsPerPage || itemsPerPage,
-            totalPages: response.data.results.pagination?.totalPages || 1,
-            totalItems: response.data.results.pagination?.totalItems || 0,
+            currentPage: Number(pagination?.currentPage) || 1,
+            itemsPerPage: Number(pagination?.itemsPerPage) || 10,
+            totalPages: Number(pagination?.totalPages) || 0,
+            totalItems: Number(pagination?.totalItems) || 0,
           },
           loading: false
         });
-
-        return response.data.results;
+        
       } catch (error) {
-        console.error('Error fetching incidents:', error);
         set({ 
-          error: error.response?.data?.message || 'Failed to fetch incidents', 
+          error: error.response?.data?.message || 'Failed to fetch incidents',
           loading: false 
         });
-        return null;
       }
     },
-
     getIncidentById: async (id) => {
       try {
         set({ loading: true, error: null });
