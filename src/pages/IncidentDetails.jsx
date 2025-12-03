@@ -19,7 +19,7 @@ import moment from 'moment';
 import ViewImageModal from "../components/ViewImageModal";
 
 const IncidentDetails = () => {
-  const { incidentId } = useParams();
+  const { incidentId = "" } = useParams();
   const navigate = useNavigate();
   const [incident, setIncident] = useState(null);
   const { getIncidentById, getImage, StatusAndSignature, loading } = useIncidentManagementStore();
@@ -115,7 +115,7 @@ useEffect(() => {
 
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "N/A";
-    return moment(dateTimeString).format('MMMM D, YYYY h:mm A');
+    return moment(dateTimeString)?.format('MMMM D, YYYY h:mm A');
   };
   const parseJsonSafely = (jsonString) => {
     try {
@@ -154,21 +154,9 @@ useEffect(() => {
     setShowStatusModal(true);
   };
 
-  if (loading) {
-    return <GlobalLoader />;
-  }
-
-  if (!incident) {
-    return (
-      <div className="content flex-grow-1 p-4">
-        <Alert variant="danger">Incident not found</Alert>
-      </div>
-    );
-  }
-
-  const location = incident.location ? parseJsonSafely(incident.location) : null;
-  const otherVehicles = incident.other_vehicles ? parseJsonSafely(incident.other_vehicles) : [];
-  const witnesses = incident.witnesses ? parseJsonSafely(incident.witnesses) : [];
+  const location = incident?.location ? parseJsonSafely(incident?.location) : null;
+  const otherVehicles = incident?.other_vehicles ? parseJsonSafely(incident?.other_vehicles) : [];
+  const witnesses = incident?.witnesses ? parseJsonSafely(incident?.witnesses) : [];
 
   const renderStatusBadge = (status) => {
     const statusConfig = {
@@ -193,7 +181,7 @@ useEffect(() => {
   return (
     <div className="content ">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="mb-0">Incident Report #{incident.id}</h3>
+        <h3 className="mb-0">Incident Report #{incident?.id}</h3>
         <div>
           <Button variant="secondary" className="me-2" onClick={() => navigate(-1)}>
             <i className="bi bi-arrow-left" /> Back to Incidents
@@ -206,22 +194,22 @@ useEffect(() => {
 
       <div className="mb-3">
         <span className="me-3">
-          <strong>Status:</strong> {renderStatusBadge(incident.status)}
+          <strong>Status:</strong> {renderStatusBadge(incident?.status)}
         </span>
         <span className="me-3">
-          <strong>Reported On:</strong> {formatDateTime(incident.date_reported)}
+          <strong>Reported On:</strong> {formatDateTime(incident?.date_reported)}
         </span>
       </div>
 
       {/* 1. Company Information */}
       {renderSection("1. Company Information", (
         <Row>
-          <InfoBox label="Company" value={incident.company?.company_name || "N/A"} />
-          <InfoBox label="Driver Name" value={incident.driver.first_name + " " + incident.driver.last_name || "N/A"} />
-          <InfoBox label="Driver DOB" value={incident.driver?.dob || "N/A"} />
-          <InfoBox label="Driver Number" value={incident.driver?.phone || "N/A"} />
-          <InfoBox label="Unit/Truck Number" value={incident.truck?.truck_no || "N/A"} />
-          <InfoBox label="Fleet/Division" value={incident.fleet?.id ? `${incident?.fleet?.name}` : "N/A"} />
+          <InfoBox label="Company" value={incident?.company?.company_name || "N/A"} />
+          <InfoBox label="Driver Name" value={incident?.driver?.first_name + " " + incident?.driver?.last_name || "N/A"} />
+          <InfoBox label="Driver DOB" value={incident?.driver?.dob || "N/A"} />
+          <InfoBox label="Driver Number" value={incident?.driver?.phone || "N/A"} />
+          <InfoBox label="Unit/Truck Number" value={incident?.truck?.truck_no || "N/A"} />
+          <InfoBox label="Fleet/Division" value={incident?.fleet?.id ? `${incident?.fleet?.name}` : "N/A"} />
           {/* <InfoBox label="Reported By" value={incident.driver.first_name + " " + incident.driver.last_name || "N/A"} />
           <InfoBox label="Report Date" value={formatDate(incident.date_reported)} /> */}
         </Row>
@@ -231,26 +219,26 @@ useEffect(() => {
       {renderSection("2. Accident Details", (
         <>
           <Row>
-            <InfoBox label="Accident Date" value={formatDate(incident.accident_date)} />
-            <InfoBox label="Accident Time" value={formatTime(incident.accident_time)} />
+            <InfoBox label="Accident Date" value={formatDate(incident?.accident_date)} />
+            <InfoBox label="Accident Time" value={formatTime(incident?.accident_time)} />
 
             <InfoBox
               label="Location"
               value={location ?
-                `${location.address || ''}, ${location.city || ''}` :
+                `${location?.address || ''}, ${location?.city || ''}` :
                 "N/A"
               }
             />
 
             <InfoBox
               label="Province"
-              value={incident.state.name || "N/A"}
+              value={incident?.state?.name || "N/A"}
             />
-            <InfoBox label="Weather Conditions" value={incident.weather_conditions || "N/A"} />
-            <InfoBox label="Road Conditions" value={incident.road_conditions || "N/A"} />
+            <InfoBox label="Weather Conditions" value={incident?.weather_conditions || "N/A"} />
+            <InfoBox label="Road Conditions" value={incident?.road_conditions || "N/A"} />
             <InfoBox
               label="Area Type"
-              value={incident.area_type || "N/A"}
+              value={incident?.area_type || "N/A"}
             />
           </Row>
         </>
@@ -259,9 +247,9 @@ useEffect(() => {
       {/* 3. Vehicle(s) Involved - Company Vehicle */}
       {renderSection("3. Vehicle(s) Involved - Company Vehicle", (
         <Row>
-          <InfoBox label="Year/Make/Model" value={`${incident.truck?.truck_brand || ''}-${incident.truck?.model || ''}`.trim() || "N/A"} />
-          <InfoBox label="Plate" value={incident.truck?.truck_no || "N/A"} />
-          <InfoBox label="Vin" value={incident.truck?.vin_number || "N/A"} />
+          <InfoBox label="Year/Make/Model" value={`${incident?.truck?.truck_brand || ''}-${incident?.truck?.model || ''}`.trim() || "N/A"} />
+          <InfoBox label="Plate" value={incident?.truck?.plate_no || "N/A"} />
+          <InfoBox label="Vin" value={incident?.truck?.vin_number || "N/A"} />
           <InfoBox label="Load Type" value={incident?.load_type || "N/A"} />
           <InfoBox md={12} label="Damage Description" value={incident?.damage_description || "N/A"} />
         </Row>
@@ -284,16 +272,16 @@ useEffect(() => {
               {otherVehicles && otherVehicles.length > 0 ? (
                 otherVehicles.map((vehicle, index) => (
                   <tr key={index}>
-                    <td>{vehicle.driver_name || "N/A"}</td>
-                    <td>{vehicle.license_number || "N/A"}</td>
-                    <td>{vehicle.make_model_plate || "N/A"}</td>
-                    <td>{vehicle.insurance_provider || "N/A"}</td>
-                    <td>{vehicle.contact_number || "N/A"}</td>
+                    <td>{vehicle?.driver_name || "N/A"}</td>
+                    <td>{vehicle?.license_number || "N/A"}</td>
+                    <td>{vehicle?.make_model_plate || "N/A"}</td>
+                    <td>{vehicle?.insurance_provider || "N/A"}</td>
+                    <td>{vehicle?.contact_number || "N/A"}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="text-center">No other vehicles involved</td>
+                  <td colSpan="5" className="text-center">No other vehicles involved</td>
                 </tr>
               )}
             </tbody>
@@ -304,7 +292,7 @@ useEffect(() => {
       {/* 5. Description of the Accident */}
       {renderSection("5. Description of the Accident", (
         <div>
-          <p>{incident.accident_description || "No description provided."}</p>
+          <p>{incident?.accident_description || "No description provided."}</p>
         </div>
       ))}
 
@@ -313,22 +301,22 @@ useEffect(() => {
         <Row>
           <InfoBox
             label="Injuries Reported"
-            value={incident.injuries_reported || "None"}
+            value={incident?.injuries_reported || "None"}
             md={6}
           />
           <InfoBox
             label="First Aid Provided By"
-            value={incident.first_aid_provided_by || "N/A"}
+            value={incident?.first_aid_provided_by || "N/A"}
             md={6}
           />
           <InfoBox
             label="Ambulance Information"
-            value={incident.ambulance_info || "N/A"}
+            value={incident?.ambulance_info || "N/A"}
             md={6}
           />
           <InfoBox
             label="Hospital Information"
-            value={incident.hospital_info || "N/A"}
+            value={incident?.hospital_info || "N/A"}
             md={6}
           />
         </Row>
@@ -344,21 +332,23 @@ useEffect(() => {
                 <th>Contact</th>
                 <th>Address</th>
                 <th>Statement Taken</th>
+                <th>Statement</th>
               </tr>
             </thead>
             <tbody>
-              {witnesses && witnesses.length > 0 ? (
-                witnesses.map((witness, index) => (
+              {witnesses && witnesses?.length > 0 ? (
+                witnesses?.map((witness, index) => (
                   <tr key={index}>
-                    <td>{witness.name || "N/A"}</td>
-                    <td>{witness.contact || "N/A"}</td>
-                    <td>{witness.address || "N/A"}</td>
+                    <td>{witness?.name || "N/A"}</td>
+                    <td>{witness?.contact || "N/A"}</td>
+                    <td>{witness?.address || "N/A"}</td>
                     <td>{witness.statement_taken ? "Yes" : "No" || "N/A"}</td>
+                    <td>{witness.statement ? witness.statement : "N/A"}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center">No witnesses</td>
+                  <td colSpan="5" className="text-center">No witnesses</td>
                 </tr>
               )}
             </tbody>
@@ -371,23 +361,23 @@ useEffect(() => {
         <Row>
           <InfoBox
             label="Police Report Filed"
-            value={incident.police_report_filed ? "Yes" : "No"}
+            value={incident?.police_report_filed ? "Yes" : "No"}
           />
           <InfoBox
             label="Officer Name"
-            value={incident.officer_name || "N/A"}
+            value={incident?.officer_name || "N/A"}
           />
           <InfoBox
             label="Badge Number"
-            value={incident.badge_number || "N/A"}
+            value={incident?.badge_number || "N/A"}
           />
           <InfoBox
             label="Police Department"
-            value={incident.police_department || "N/A"}
+            value={incident?.police_department || "N/A"}
           />
           <InfoBox
             label="Case Number"
-            value={incident.case_number || "N/A"}
+            value={incident?.case_number || "N/A"}
             md={6}
           />
         </Row>
@@ -396,19 +386,19 @@ useEffect(() => {
       {/* 9. Photos / Evidence */}
       {renderSection("9. Photos / Evidence", (
         <div className="w-100" >
-          {incident.evidence_photos && incident.evidence_photos.length > 0 ? (
+          {incident?.evidence_photos && incident?.evidence_photos?.length > 0 ? (
             <Row>
-              {incident.evidence_photos.map((photo, index) => (
+              {incident?.evidence_photos?.map((photo, index) => (
                 <Col key={index} md={4} className="mb-3">
                   <Card>
-                    {loadingStates[photo.file_url] ? (
+                    {loadingStates[photo?.file_url] ? (
                       <div className="d-flex justify-content-center align-items-center"
                         style={{ height: '200px', backgroundColor: '#f8f9fa' }}>
                         <div className="spinner-border text-primary" role="status">
                           <span className="visually-hidden">Loading...</span>
                         </div>
                       </div>
-                    ) : mediaData[photo.file_url]?.type?.startsWith('video/') ? (
+                    ) : mediaData[photo?.file_url]?.type?.startsWith('video/') ? (
                       <video
                         controls
                         preload="metadata"
@@ -419,21 +409,21 @@ useEffect(() => {
                           backgroundColor: "#f8f9fa"
                         }}
                         playsInline
-                        webkit-playsInline
-                        x5-playsinline
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
                         controlsList="nodownload nofullscreen noremoteplayback"
                         disablePictureInPicture
                       >
                         <source
-                          src={mediaData[photo.file_url]?.url}
-                          type={mediaData[photo.file_url]?.type}
+                          src={mediaData[photo?.file_url]?.url}
+                          type={mediaData[photo?.file_url]?.type}
                         />
                         Your browser does not support the video tag.
                       </video>
                     ) : (
                       <Card.Img
                         variant="top"
-                        src={mediaData[photo.file_url]?.url}
+                        src={mediaData[photo?.file_url]?.url}
                         style={{
                           height: '200px',
                           objectFit: 'cover'
@@ -446,12 +436,12 @@ useEffect(() => {
                         variant="outline-primary"
                         size="sm"
                         onClick={() => setSelectedImage({
-                          file_url: photo.file_url,
-                          type: mediaData[photo.file_url]?.type
+                          file_url: photo?.file_url,
+                          type: mediaData[photo?.file_url]?.type
                         })}
                       >
-                        <i className={`bi bi-${mediaData[photo.file_url]?.type?.startsWith('video/') ? 'play-circle' : 'zoom-in'} me-1`} />
-                        {mediaData[photo.file_url]?.type?.startsWith('video/') ? 'Play Video' : 'View Full Size'}
+                        <i className={`bi bi-${mediaData[photo?.file_url]?.type?.startsWith('video/') ? 'play-circle' : 'zoom-in'} me-1`} />
+                        {mediaData[photo?.file_url]?.type?.startsWith('video/') ? 'Play Video' : 'View Full Size'}
                       </Button>
                     </Card.Body>
                   </Card>
@@ -469,32 +459,32 @@ useEffect(() => {
         <Row>
           <InfoBox
             label="Supervisor Name"
-            value={incident.supervisor_name || "N/A"}
+            value={incident?.supervisor_name || "N/A"}
           />
 
           <InfoBox
             label="Driver Signature"
-            value={incident.driver_signature ? (
-              <span className="text-success">{incident.driver_signature}</span>
+            value={incident?.driver_signature ? (
+              <span className="text-success">{incident?.driver_signature}</span>
             ) : (
               <span className="text-danger">Not Signed</span>
             )}
           />
           <InfoBox
             label="Supervisor Signature"
-            value={incident.supervisor_signature ? (
-              <span className="text-success">{incident.supervisor_signature}</span>
+            value={incident?.supervisor_signature ? (
+              <span className="text-success">{incident?.supervisor_signature}</span>
             ) : (
               <span className="text-warning">Pending</span>
             )}
           />
           <InfoBox
             label="Signature Date"
-            value={incident.signature_date ? formatDateTime(incident.signature_date) : "N/A"}
+            value={incident?.signature_date ? formatDateTime(incident?.signature_date) : "N/A"}
           />
           <InfoBox
             label="Corrective Actions"
-            value={incident.corrective_actions || "N/A"}
+            value={incident?.corrective_actions || "N/A"}
             md={12}
           />
         </Row>
@@ -568,6 +558,8 @@ useEffect(() => {
         } : null}
         setSelectedImage={setSelectedImage}
       />
+
+      <GlobalLoader loading={loading} />
     </div>
   );
 };

@@ -1,13 +1,17 @@
 import DataTable from "react-data-table-component";
 import GlobalLoader from "../components/GlobalLoader"
 import useIncidentManagementStore from "../store/incidentManagementStore"
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useState } from "react"
 import TableLoader from "../components/TableLoader";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const IncidentManagement = () => {
-  const { incidents, loading, getAllIncidents, pagination } = useIncidentManagementStore();
+  const { incidents, loading, getAllIncidents, pagination, deleteIncident } = useIncidentManagementStore();
   const navigate = useNavigate();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedIncidentId, setSelectedIncidentId] = useState(null);
 
   const handlePageChange = useCallback((page) => {
   getAllIncidents({ page: page });
@@ -25,6 +29,14 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
 
   const handleViewIncidentReport = (id) => {
     navigate(`/incident-management/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    await deleteIncident(id);
+    toast.success("Incident deleted successfully");
+    setSelectedIncidentId(null);
+    setShowConfirmDialog(false);
+    getAllIncidents();
   };
 
   const columns = [
@@ -80,14 +92,6 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
       sortable: true,
       cell: (row) => (
         <>
-          {/* edit */}
-          <button
-            className="btn-action"
-          // onClick={() => handleEditDriver(row.id)}
-          >
-            <i className="bi bi-pencil"></i>
-          </button>
-
           <button
             className="btn-action"
             onClick={() => handleViewIncidentReport(row.id)}
@@ -97,7 +101,10 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
 
           {/* Delete (except admin) */}
           <button className="btn-action"
-          //   onClick={() => handleDelete(row.id)}
+            onClick={() => {
+              setSelectedIncidentId(row.id);
+              setShowConfirmDialog(true);
+            }}
           >
             <i className="bi bi-trash"></i>
           </button>
@@ -143,7 +150,18 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
         </div>
       </div>
 
-
+      <ConfirmDialog 
+        show={showConfirmDialog}
+        onHide={() => setShowConfirmDialog(false)}
+        onConfirm={() => handleDelete(selectedIncidentId)}
+        title="Delete Incident"
+        message="Are you sure you want to delete this incident?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+      
+     
     </div>
   )
 }
