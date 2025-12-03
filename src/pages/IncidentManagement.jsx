@@ -1,30 +1,47 @@
 import DataTable from "react-data-table-component";
-import GlobalLoader from "../components/GlobalLoader"
-import useIncidentManagementStore from "../store/incidentManagementStore"
-import { useEffect, useCallback } from "react"
+import GlobalLoader from "../components/GlobalLoader";
+import useIncidentManagementStore from "../store/incidentManagementStore";
+import { useEffect, useCallback, useState } from "react";
 import TableLoader from "../components/TableLoader";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const IncidentManagement = () => {
-  const { incidents, loading, getAllIncidents, pagination } = useIncidentManagementStore();
+  const { incidents, loading, getAllIncidents, pagination, deleteIncident } =
+    useIncidentManagementStore();
   const navigate = useNavigate();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedIncidentId, setSelectedIncidentId] = useState(null);
 
-  const handlePageChange = useCallback((page) => {
-  getAllIncidents({ page: page });
-}, [getAllIncidents]);
+  const handlePageChange = useCallback(
+    (page) => {
+      getAllIncidents({ page: page });
+    },
+    [getAllIncidents]
+  );
 
-const handlePerRowsChange = useCallback((newPerPage, page) => {
-  getAllIncidents({ page, limit: newPerPage });
-}, [getAllIncidents]);
-
+  const handlePerRowsChange = useCallback(
+    (newPerPage, page) => {
+      getAllIncidents({ page, limit: newPerPage });
+    },
+    [getAllIncidents]
+  );
 
   useEffect(() => {
     getAllIncidents();
   }, [getAllIncidents]);
 
-
   const handleViewIncidentReport = (id) => {
     navigate(`/incident-management/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    await deleteIncident(id);
+    toast.success("Incident deleted successfully");
+    setSelectedIncidentId(null);
+    setShowConfirmDialog(false);
+    getAllIncidents();
   };
 
   const columns = [
@@ -32,14 +49,12 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
       name: "ID",
       selector: (row) => row?.id,
       sortable: true,
-      width: "8%"
-
+      width: "8%",
     },
     {
       name: "accident_date",
       selector: (row) => row?.accident_date,
       sortable: true,
-
     },
     {
       name: "accident_time",
@@ -57,8 +72,9 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
       sortable: true,
       cell: (row) => (
         <span
-          className={`status-badge ${row.status === "active" ? "active" : "inactive"
-            }`}
+          className={`status-badge ${
+            row.status === "active" ? "active" : "inactive"
+          }`}
         >
           {row?.status?.charAt(0)?.toUpperCase() + row?.status?.slice(1)}
         </span>
@@ -80,14 +96,6 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
       sortable: true,
       cell: (row) => (
         <>
-          {/* edit */}
-          <button
-            className="btn-action"
-          // onClick={() => handleEditDriver(row.id)}
-          >
-            <i className="bi bi-pencil"></i>
-          </button>
-
           <button
             className="btn-action"
             onClick={() => handleViewIncidentReport(row.id)}
@@ -96,8 +104,12 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
           </button>
 
           {/* Delete (except admin) */}
-          <button className="btn-action"
-          //   onClick={() => handleDelete(row.id)}
+          <button
+            className="btn-action"
+            onClick={() => {
+              setSelectedIncidentId(row.id);
+              setShowConfirmDialog(true);
+            }}
           >
             <i className="bi bi-trash"></i>
           </button>
@@ -108,21 +120,17 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
 
   console.log("Pagination:", pagination);
 
-
-
   return (
     <div className="content">
       <GlobalLoader loading={false} />
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 className="mb-0 ms-3">Incident Management</h3>
-        <div className="d-flex align-items-center gap-2">
-        </div>
+        <div className="d-flex align-items-center gap-2"></div>
       </div>
 
       {/* Incidents Table */}
       <div className="card shadow-sm border">
-
         <div className="card-body p-0 rounded-3 overflow-hidden">
           <div className="table-responsive">
             <DataTable
@@ -143,9 +151,18 @@ const handlePerRowsChange = useCallback((newPerPage, page) => {
         </div>
       </div>
 
-
+      <ConfirmDialog
+        show={showConfirmDialog}
+        onHide={() => setShowConfirmDialog(false)}
+        onConfirm={() => handleDelete(selectedIncidentId)}
+        title="Delete Incident"
+        message="Are you sure you want to delete this incident?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
-  )
-}
+  );
+};
 
-export default IncidentManagement
+export default IncidentManagement;

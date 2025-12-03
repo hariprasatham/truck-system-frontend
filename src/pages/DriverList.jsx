@@ -88,7 +88,7 @@ const DriverList = () => {
       name: "ID",
       selector: (row) => row.id,
       sortable: true,
-      width: "5%",
+      width: "8%",
     },
     {
       name: "Name",

@@ -11,6 +11,7 @@ import {
 
 import useCompanyDriverStore from "../store/companyDriverStore";
 import { useCountryStateStore } from "../store/countryStateStore";
+import moment from "moment";
 
 const EditDriverModal = ({
   showEditModal,
@@ -79,7 +80,25 @@ const EditDriverModal = ({
   return (
     <Modal
       show={showEditModal}
-      onHide={() => setShowEditModal(false)}
+      onHide={() => {
+        setShowEditModal(false)
+        setNewDriver({
+          first_name: "",
+          last_name: "",
+          phone: "",
+          email: "",
+          license: "",
+          country: "",
+          state: "",
+          expiry_date: "",
+          driver_type: "",
+          canadian_hos: "70_7",
+          us_hos: "70_8",
+          yard_moves: false,
+          personal_cmv: false,
+        })
+
+      }}
       size="lg"
       scrollable
       centered
@@ -199,7 +218,7 @@ const EditDriverModal = ({
                       type="date"
                       name="expiry_date"
                       size="sm"
-                      value={newDriver?.expiry_date}
+                      value={moment(newDriver?.expiry_date).format("YYYY-MM-DD")}
                       onChange={onChange}
                     />
                   </Col>

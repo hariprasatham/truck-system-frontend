@@ -106,6 +106,29 @@ const useIncidentManagementStore = create(
       }
     },
 
+    deleteIncident:async (id) => {
+      try {
+        set({ loading: true, error: null });
+        const response = await api.delete(`/accidentReport/${id}`);
+        
+        set({
+          error: null,
+          loading: false
+        });
+        
+        return response.data.results;
+      } catch (error) {
+        console.error('Error deleting incident:', error);
+        set({ 
+          error: error.response?.data?.message || 'Failed to delete incident',
+          loading: false
+        });
+        return null;
+      } finally {
+        set({ loading: false });
+      }
+    },
+
     setError: (error) => set({ error }),
   }))
 );
