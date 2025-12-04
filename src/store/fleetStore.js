@@ -23,7 +23,7 @@ const useFleetStore = create((set, get) => ({
     try {
       const res = await api.get("/fleet");
   
-      const rawFleets = res.data.code || [];
+      const rawFleets = res.data.results || [];
   
       // Transform FleetTrucks → trucks[]
       const fleets = rawFleets.map((f) => ({
