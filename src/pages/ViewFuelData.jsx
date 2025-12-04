@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import useFuelStore from '../store/fuelStore'
-import { useParams } from 'react-router-dom';
-
+import useFuelStore from "../store/fuelStore";
+import { useParams } from "react-router-dom";
 
 const ViewFuelData = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
@@ -10,22 +9,21 @@ const ViewFuelData = () => {
   const { fuelId } = useParams();
   const [expandedRows, setExpandedRows] = useState({});
 
-
-
   useEffect(() => {
     getFuelInvoiceById(fuelId);
   }, [fuelId]);
 
-  const locationNames = [...new Set(currentFuelInvoice?.map((item) => item.province))];
+  const locationNames = [
+    ...new Set(currentFuelInvoice?.map((item) => item.province)),
+  ];
 
   // Toggle row expanded state
   const handleRowExpandToggled = (toggled) => {
-    setExpandedRows(prev => ({
+    setExpandedRows((prev) => ({
       ...prev,
-      [toggled.province]: !prev[toggled.province]
+      [toggled.province]: !prev[toggled.province],
     }));
   };
-
 
   // --- Define columns for react-data-table-component ---
   const columns = [
@@ -46,7 +44,7 @@ const ViewFuelData = () => {
     },
     {
       name: "Gas Quantity",
-      selector: (row) => (row.total_qty).toFixed(3),
+      selector: (row) => row.total_qty.toFixed(3),
       sortable: true,
       right: true,
     },
@@ -72,7 +70,6 @@ const ViewFuelData = () => {
         // backgroundColor: "#f8f9fa",
         fontWeight: "bold",
         fontSize: "13px",
-        
       },
     },
     cells: {
@@ -88,7 +85,7 @@ const ViewFuelData = () => {
       name: "Date",
       selector: (row) => row.date,
       sortable: true,
-      width: '120px'
+      width: "120px",
     },
     {
       name: "Quantity",
@@ -107,13 +104,15 @@ const ViewFuelData = () => {
       selector: (row) => (row.final_amount / row.qty).toFixed(2),
       sortable: true,
       right: true,
-    }
+    },
   ];
 
   // Custom expandable component
   const ExpandableComponent = ({ data }) => (
     <div className="p-3 bg-light">
-      <h6 className="mb-3">Fuel Entries for {data.state_name} - {data.province}</h6>
+      <h6 className="mb-3">
+        Fuel Entries for {data.state_name} - {data.province}
+      </h6>
       <DataTable
         columns={childColumns}
         data={data.records}
@@ -136,14 +135,14 @@ const ViewFuelData = () => {
     </div>
   );
 
-
   // Filter data based on selected location
   const filteredData = useMemo(() => {
-    if (!selectedLocation || !currentFuelInvoice) return currentFuelInvoice || [];
-    return currentFuelInvoice.filter(item => item.province === selectedLocation);
+    if (!selectedLocation || !currentFuelInvoice)
+      return currentFuelInvoice || [];
+    return currentFuelInvoice.filter(
+      (item) => item.province === selectedLocation
+    );
   }, [currentFuelInvoice, selectedLocation]);
-
-
 
   return (
     <div className="container content mt-4">
@@ -204,9 +203,11 @@ const ViewFuelData = () => {
             expandableRows
             expandableRowsComponent={ExpandableComponent}
             expandOnRowClicked={true}
-            expandableRowExpanded={row => expandedRows[row.province] || false}
+            expandableRowExpanded={(row) => expandedRows[row.province] || false}
             onRowExpandToggled={handleRowExpandToggled}
-            expandableRowDisabled={row => !row.records || row.records.length === 0}
+            expandableRowDisabled={(row) =>
+              !row.records || row.records.length === 0
+            }
             expandableRowsHideExpander={false}
             // pagination
             // striped
@@ -219,10 +220,8 @@ const ViewFuelData = () => {
           />
         </div>
       </div>
-
-
     </div>
-  )
-}
+  );
+};
 
-export default ViewFuelData
+export default ViewFuelData;
