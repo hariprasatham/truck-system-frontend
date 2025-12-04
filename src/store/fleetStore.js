@@ -7,6 +7,12 @@ const useFleetStore = create((set, get) => ({
   allTrucks: [],
   loading: false,
   error: null,
+  fleetTrucksData: {
+    linkedTrucks: [],
+    freeTrucks: [],
+    otherFleetTrucks: []
+  },
+  
 
   // ------------------------------------------
   // FETCH FLEETS FOR COMPANY
@@ -115,6 +121,30 @@ const useFleetStore = create((set, get) => ({
       throw err;
     }
   },
+
+  getFleetTrucksData: async (fleetId) => {
+    set({ loading: true });
+  
+    try {
+      const res = await api.get(`/fleet/${fleetId}/trucksdata`);
+      const data = res.data.code; // <-- the actual object with linked_trucks / free_trucks
+  
+      const formatted = {
+        linkedTrucks: data.linked_trucks || [],
+        freeTrucks: data.free_trucks || [],
+        otherFleetTrucks: data.other_fleet_trucks || [] // if backend provides this
+      };
+  
+      set({ fleetTrucksData: formatted, loading: false });
+      return formatted;
+    } catch (error) {
+      set({ loading: false });
+      console.error("Error fetching fleet trucks:", error);
+      throw error;
+    }
+  },
+  
+  
   
   fetchAllTrucksByCompanies: async () => {
     set({ loading: true, error: null });
