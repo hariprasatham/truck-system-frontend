@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { Button, Badge, Form, Modal } from "react-bootstrap";
 import { toast } from "react-hot-toast";
@@ -12,6 +12,7 @@ const FleetManagement = () => {
     linkTrucks,
     updateFleet,
     getFleetTrucksData,
+    addFleet, // <-- addFleet from Zustand
   } = useFleetStore();
 
   const [fleetTrucksData, setFleetTrucksData] = useState(null);
@@ -25,11 +26,31 @@ const FleetManagement = () => {
     status: 1,
   });
   const [expandedRows, setExpandedRows] = useState({});
+  const [showAddFleetModal, setShowAddFleetModal] = useState(false);
+  const [newFleetName, setNewFleetName] = useState("");
 
   useEffect(() => {
     fetchFleets();
     fetchAllTrucksByCompanies();
   }, []);
+
+  // --- Add Fleet ---
+  const handleAddFleet = async () => {
+    if (!newFleetName.trim()) {
+      toast.error("Fleet name is required");
+      return;
+    }
+    try {
+      await addFleet({ name: newFleetName, status: 1 });
+      // toast.success("Fleet added successfully!");
+      setNewFleetName("");
+      setShowAddFleetModal(false);
+      fetchFleets(); // refresh list
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add fleet");
+    }
+  };
 
   // --- Open Link Trucks Modal ---
   const openLinkTruckModal = async (fleet) => {
@@ -40,7 +61,7 @@ const FleetManagement = () => {
       setSelectedTrucks(data.linkedTrucks.map((t) => t.id));
       setShowLinkTruckModal(true);
     } catch {
-      toast.error("Failed to load trucks");
+      // toast.error("Failed to load trucks");
     }
   };
 
@@ -51,8 +72,9 @@ const FleetManagement = () => {
         name: editFleetForm.name,
         status: editFleetForm.status,
       });
-      toast.success("Fleet updated!");
+      // toast.success("Fleet updated!");
       setShowEditFleetModal(false);
+      fetchFleets();
     } catch (err) {
       console.error("Update error:", err);
     }
@@ -72,8 +94,9 @@ const FleetManagement = () => {
     if (!selectedFleet) return;
     try {
       await linkTrucks(selectedFleet.id, selectedTrucks);
-      toast.success("Trucks linked successfully!");
+      // toast.success("Trucks linked successfully!");
       setShowLinkTruckModal(false);
+      fetchFleets();
     } catch {}
   };
 
@@ -109,7 +132,6 @@ const FleetManagement = () => {
           <Button
             size="sm"
             variant="secondary"
-            className="me-2"
             onClick={() => {
               setEditFleetForm({
                 id: row.id,
@@ -132,7 +154,7 @@ const FleetManagement = () => {
       return <p className="p-2">No trucks linked.</p>;
     return (
       <div className="p-2 bg-light">
-        <span>Linked Trucks</span>
+        <h5 className="mb-2">Linked Trucks for {data.name}</h5>
         <DataTable
           columns={[
             { name: "Truck No", selector: (row) => row.truck_no },
@@ -154,6 +176,13 @@ const FleetManagement = () => {
           pagination={false}
           highlightOnHover
           striped
+          customStyles={{
+            rows: { style: { border: "1px solid #dee2e6" } },
+            headCells: {
+              style: { borderBottom: "1px solid #dee2e6", fontWeight: "bold" },
+            },
+            cells: { style: { borderBottom: "1px solid #dee2e6" } },
+          }}
         />
       </div>
     );
@@ -161,8 +190,12 @@ const FleetManagement = () => {
 
   return (
     <div className="content mt-4">
-      <h3>Fleet Management</h3>
-      <div style={{ border: "1px solid #d3cccc", borderRadius: " 7px" }}>
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h3>Fleet Management</h3>
+        <Button onClick={() => setShowAddFleetModal(true)}>Add Fleet</Button>
+      </div>
+
+      <div style={{ border: "1px solid #d3cccc", borderRadius: "7px" }}>
         <DataTable
           columns={columns}
           data={fleets || []}
@@ -182,8 +215,53 @@ const FleetManagement = () => {
           noDataComponent={
             <div className="p-3 text-muted">No fleets found.</div>
           }
+          customStyles={{
+            rows: { style: { border: "1px solid #dee2e6" } },
+            headCells: {
+              style: { borderBottom: "1px solid #dee2e6", fontWeight: "bold" },
+            },
+            cells: { style: { borderBottom: "1px solid #dee2e6" } },
+          }}
         />
       </div>
+
+      {/* --- Add Fleet Modal --- */}
+      <Modal
+        show={showAddFleetModal}
+        onHide={() => setShowAddFleetModal(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Fleet</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Fleet Name</Form.Label>
+            <Form.Control
+              type="text"
+              value={newFleetName}
+              onChange={(e) =>
+                setNewFleetName(
+                  e.target.value
+                    .toLowerCase()
+                    .replace(/\b\w/g, (char) => char.toUpperCase())
+                )
+              }
+              style={{ textTransform: "capitalize" }}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddFleetModal(false)}
+          >
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleAddFleet}>
+            Add Fleet
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* --- Link Trucks Modal --- */}
       <Modal
