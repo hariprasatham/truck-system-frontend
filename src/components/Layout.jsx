@@ -23,12 +23,13 @@ import useUserStore from "../store/userStore";
 
 const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { fetchAllMenus, fetchUserMenus } = useMenuStore();
+  const { fetchAllMenus, fetchUserMenus, fetchAllMenusForAssignment } = useMenuStore();
   const { user } = useUserStore();
 
   useEffect(() => {
     if(user.role == "admin"){
       fetchAllMenus();
+      fetchAllMenusForAssignment();
     }
     fetchUserMenus();
   }, []);

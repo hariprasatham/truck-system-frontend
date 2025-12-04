@@ -5,7 +5,7 @@ const AssignMenusModal = ({ show, onClose, selectedUser }) => {
   const {
     fetchAssignedMenus,
     assignedMenus,
-    allMenus,
+    allMenusForAssignment,
     updateUserMenus,
     error,
   } = useMenuStore();
@@ -76,7 +76,7 @@ const AssignMenusModal = ({ show, onClose, selectedUser }) => {
             {error && <div className="alert alert-danger">{error}</div>}
 
             <ul className="list-group">
-              {allMenus
+              {allMenusForAssignment
                 .filter((menu) => menu.role != "admin")
                 .map((menu, idx) => (
                   <li
