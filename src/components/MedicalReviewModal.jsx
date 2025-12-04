@@ -23,6 +23,23 @@ const MedicalReviewModal = ({reviewData, show, handleClose}) => {
     { label: "Overall Verification", key: "overall_verification" },
   ];
 
+  const formatValue = (key, value) => {
+  const dateFields = [
+    "collection_date",
+    "lab_received_date",
+    "lab_released_date",
+    "mro_date_ccf2",
+    "mro_verification_date",
+    "mro_report_date"
+  ];
+  
+  if (dateFields.includes(key) && value) {
+    return new Date(value).toLocaleDateString("en-GB");
+  }
+  return value || "-";
+};
+
+
   return (
     <div className="p-3">
       <Modal show={show} onHide={handleClose} size="lg" top-centered>
@@ -38,7 +55,7 @@ const MedicalReviewModal = ({reviewData, show, handleClose}) => {
                     <small className="text-muted">{f.label}:</small>
                     <br />
                     <span className="fw-semibold small">
-                      {reviewData[f.key] || "-"}
+                      {formatValue(f.key, reviewData[f.key])}
                     </span>
                   </Col>
                 ))}
