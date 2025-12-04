@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 const useMenuStore = create((set, get) => ({
   // State
   allMenus: [],
+  allMenusForAssignment: [],
  assignedMenus: [],
   userMenus: [],
   loading: false,
@@ -28,6 +29,22 @@ const useMenuStore = create((set, get) => ({
       });
       const { menuItems, pagination } = response.data.results;
       set({ allMenus: menuItems, pagination, loading: false,});
+      return menuItems
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Failed to fetch menus',
+        loading: false 
+      });
+      throw error;
+    }
+  },
+
+    fetchAllMenusForAssignment: async (params = {}) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await api.get('/menu/all-menus');
+      const { menuItems, pagination } = response.data.results;
+      set({ allMenusForAssignment: menuItems, loading: false,});
       return menuItems
     } catch (error) {
       set({ 
