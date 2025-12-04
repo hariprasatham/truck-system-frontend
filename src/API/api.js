@@ -1,8 +1,9 @@
 import axios from "axios";
 
+const BASEURL = import.meta.env.VITE_API_URL;
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: BASEURL,
   // withCredentials: true,
 });
 
@@ -28,13 +29,13 @@ const refreshToken = async () => {
 
     const response = await axios.post(`${BASEURL}/auth/refresh`,{
       refreshToken: localStorage.getItem("refresh_token"),
-    });
+    },);
 
-    const newAccessToken = response?.data?.access_token;
+    const newAccessToken = response?.data?.results?.access_token;
 
     // Update tokens in localStorage
     localStorage.setItem("access_token", newAccessToken);
-    localStorage.setItem("refresh_token", response?.data?.refresh_token);
+    localStorage.setItem("refresh_token", response?.data?.results?.refresh_token);
 
     return newAccessToken;
   } catch (error) {

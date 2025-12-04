@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useMenuStore from "../store/menuStore";
-const AssignMenusModal = ({ show, onClose, userId }) => {
+const AssignMenusModal = ({ show, onClose, selectedUser }) => {
   const [selectedMenus, setSelectedMenus] = useState([]);
   const {
     fetchAssignedMenus,
@@ -13,10 +13,10 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
   // Simulate previously assigned menus for the user
   useEffect(() => {
     const loadAssignedMenus = async () => {
-      if (!userId) return;
+      if (!selectedUser) return;
 
       try {
-        await fetchAssignedMenus(userId);
+        await fetchAssignedMenus(selectedUser?.id);
         // Use the response directly to avoid race conditions
       } catch (error) {
         console.error("Error loading assigned menus:", error);
@@ -24,7 +24,7 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
     };
 
     loadAssignedMenus();
-  }, [userId]);
+  }, [selectedUser]);
 
   useEffect(() => {
     setSelectedMenus(assignedMenus.map((menu) => menu.id));
@@ -40,7 +40,7 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
 
   const handleSave = async () => {
     try {
-      await updateUserMenus(userId, selectedMenus);
+      await updateUserMenus(selectedUser?.id, selectedMenus);
       if (!error) {
         onClose();
         setSelectedMenus([]);
@@ -71,7 +71,7 @@ const AssignMenusModal = ({ show, onClose, userId }) => {
 
           <div className="modal-body">
             <p className="mb-3 text-muted">
-              Assign access menus for <strong>User ID {userId}</strong>
+              Assign access menus for User<strong> {selectedUser?.username}</strong>
             </p>
             {error && <div className="alert alert-danger">{error}</div>}
 

@@ -283,7 +283,7 @@ const TruckManagement = () => {
     // ❌ FAILED LIST — single line
     if (failedCount > 0) {
       const failedList = failed
-        .map((item, index) => `(VIN: ${item.vin_number})`)
+      .map(item => `${item.reason}`)
         .join("\n");
 
       toast.error(`Failed (${failedCount}): ${failedList}`, {

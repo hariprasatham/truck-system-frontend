@@ -18,7 +18,7 @@ const UserManagement = () => {
 
 
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUser, setNewUser] = useState({
     username: "",
@@ -71,7 +71,7 @@ const UserManagement = () => {
         <>
           <button
             className="btn-action"
-            onClick={() => handleAssignMenu(row.id)}
+            onClick={() => handleAssignMenu(row)}
           >
             <i className="bi bi-list-check"></i>
           </button>
@@ -135,7 +135,7 @@ const UserManagement = () => {
 
 
   const handleAssignMenu = async (id) => {
-    setSelectedUserId(id);
+    setSelectedUser(id);
     setShowAssignModal(true);
 
   };
@@ -178,7 +178,7 @@ const UserManagement = () => {
 
   const handleAssignMenuClose = () => {
     setShowAssignModal(false);
-    setSelectedUserId(null);
+    setSelectedUser(null);
     clearAssignedMenus();
 
 
@@ -230,7 +230,7 @@ const UserManagement = () => {
 
       <AssignMenusModal
         show={showAssignModal}
-        userId={selectedUserId}
+        selectedUser={selectedUser}
         onClose={() => handleAssignMenuClose()}
       />
 
