@@ -12,7 +12,8 @@ const FuelUnit = () => {
   const [previewData, setPreviewData] = useState([]);
   const [file, setFile] = useState(null);
 
-  const { uploadFuelUnits, loading } = useCompanyDriverStore();
+  const { uploadFuelUnits, loading, uploadJurisdictionData } =
+    useCompanyDriverStore();
 
   // --------------------
   // OPEN / CLOSE MODALS
@@ -46,30 +47,63 @@ const FuelUnit = () => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return;
 
+    const fileName = uploadedFile.name;
+
     const allowedTypes = [
       "text/csv",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ];
+
     if (!allowedTypes.includes(uploadedFile.type)) {
       toast.error("Please upload only CSV or Excel file");
       return;
     }
-    // Validate filename pattern: must start with 'Unit_'
-    const fileNamePattern = /^Unit_(\d+)_/i;
-    const match = uploadedFile.name.match(fileNamePattern);
+
+    // Allow Unit_### or Jurisdiction_
+    const filenameRegex =
+      /^(Unit_(\d+)_Summary|Jurisdiction_Summary)_(\d{4})-(\d{2})_(\d{4})-(\d{2})(?:.*)\.(csv|xlsx)$/i;
+
+    const match = fileName.match(filenameRegex);
 
     if (!match) {
       toast.error(
-        "Invalid file name. File name must start with 'Unit_' followed by unit number."
+        "Invalid filename. Expected:\n" +
+          "Unit_134_Summary_2025-01_2025-03.csv\n" +
+          "Jurisdiction_Summary_2025-01_2025-03.csv"
       );
       return;
     }
 
-    const unitNumber = match[1];
+    const isUnitFile = match[1].startsWith("Unit_");
+    const unitNumber = isUnitFile ? match[2] : null;
+
+    const startYear = match[3];
+    const startMonth = parseInt(match[4], 10);
+    const endYear = match[5];
+    const endMonth = parseInt(match[6], 10);
+
+    const validQuarters = [
+      { start: 1, end: 3 },
+      { start: 4, end: 6 },
+      { start: 7, end: 9 },
+      { start: 10, end: 12 },
+    ];
+
+    const isQuarterValid = validQuarters.some(
+      (q) =>
+        startMonth === q.start && endMonth === q.end && startYear === endYear
+    );
+
+    if (!isQuarterValid) {
+      toast.error("Invalid quarter. File must be a full quarter.");
+      return;
+    }
 
     setFile(uploadedFile);
 
+    // PARSE CONTENT
     const reader = new FileReader();
+
     reader.onload = (event) => {
       const data = new Uint8Array(event.target.result);
       const workbook = XLSX.read(data, { type: "array" });
@@ -77,31 +111,112 @@ const FuelUnit = () => {
 
       let json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-      // Format 'Trip Date' column and skip invalid rows
-      json = json
-        .map((row) => {
-          const tripDate = row["Trip Date"];
-          let formatted = "";
-          if (tripDate) {
-            formatted =
-              typeof tripDate === "number"
-                ? formatDate(excelDateToJSDate(tripDate))
-                : formatDate(tripDate);
-          }
-          return {
-            ...row,
-            "Trip Date": formatted,
-            unit_no: unitNumber,
-          };
-        })
-        .filter((row) => row["Trip Date"]); // skip rows without valid Trip Date
+      // ------------------------------------
+      // 1️⃣ UNIT FILE → KEEP YOUR OLD LOGIC
+      // ------------------------------------
+      if (isUnitFile) {
+        // Remove any rows where Trip Date is missing or is "Overall Totals"
+        const unitRows = json
+          .filter(
+            (row) =>
+              row["Trip Date"] &&
+              row["Trip Date"].toString().trim().toLowerCase() !==
+                "overall totals" &&
+              row["Trip Date"].toString().trim().toLowerCase() !== "total"
+          )
+          .map((row) => {
+            const tripDate = row["Trip Date"];
+            let formatted = "";
 
-      if (json.length === 0) {
-        toast.error("No valid Trip Date rows found.");
+            if (tripDate) {
+              formatted =
+                typeof tripDate === "number"
+                  ? formatDate(excelDateToJSDate(tripDate))
+                  : formatDate(tripDate);
+            }
+
+            return {
+              ...row,
+              "Trip Date": formatted,
+              unit_no: unitNumber,
+            };
+          })
+          .filter((row) => row["Trip Date"]);
+
+        if (unitRows.length === 0) {
+          toast.error("No valid Trip Date rows found.");
+          return;
+        }
+
+        // Set period at top level, not inside each row
+        setPreviewData({
+          file_type: "UNIT",
+          period_start: `${startYear}-${String(startMonth).padStart(
+            2,
+            "0"
+          )}-01`,
+          period_end: `${endYear}-${String(endMonth).padStart(2, "0")}-01`,
+          rows: unitRows,
+        });
+
+        setFileModal(false);
+        setPreviewModal(true);
         return;
       }
 
-      setPreviewData(json);
+      // ----------------------------
+      // 2️⃣ JURISDICTION PARSING
+      // ----------------------------
+      else {
+        // Remove totals row
+        json = json.filter(
+          (row) =>
+            row["Vehicle"] &&
+            row["Vehicle"].toString().trim().toLowerCase() !== "overall totals"
+        );
+
+        if (json.length === 0) {
+          toast.error("No jurisdiction rows found.");
+          return;
+        }
+
+        // Extract dynamic state columns (everything except Vehicle + Total)
+        const allColumns = Object.keys(json[0]);
+        const stateColumns = allColumns.filter(
+          (col) => col !== "Vehicle" && col !== "Total"
+        );
+
+        // Convert into structured data
+        const jurisdictionFormatted = json.map((row) => {
+          const states = {};
+          stateColumns.forEach((state) => {
+            const val = row[state];
+            states[state] = val === "-" || val === "" ? 0 : val;
+          });
+
+          return {
+            vehicle: row["Vehicle"],
+            total: row["Total"] || 0,
+            states,
+            file_type: "JURISDICTION",
+          };
+        });
+
+        // ⬇️ ADD THE PERIOD FROM FILENAME
+        setPreviewData({
+          period_start: `${startYear}-${String(startMonth).padStart(
+            2,
+            "0"
+          )}-01`,
+          period_end: `${endYear}-${String(endMonth).padStart(2, "0")}-01`,
+          rows: jurisdictionFormatted,
+          file_type: "JURISDICTION",
+        });
+
+        setFileModal(false);
+        setPreviewModal(true);
+      }
+
       setFileModal(false);
       setPreviewModal(true);
     };
@@ -113,14 +228,66 @@ const FuelUnit = () => {
   // UPLOAD TO SERVER
   // --------------------
   const handleUploadToServer = async () => {
-    if (previewData.length === 0) return;
+    if (previewData.length == 0) {
+      toast.error("No data to upload.");
+      return;
+    }
 
     try {
-      await uploadFuelUnits(previewData);
+      let payload;
+      let response;
 
-      toast.success("Fuel units uploaded successfully!");
-      setPreviewModal(false); // close modal after success
-      setPreviewData([]);
+      // ---------------------------------
+      // 1️⃣ UNIT FILE → Array format
+      // ---------------------------------
+      if (previewData.file_type === "UNIT") {
+        payload = {
+          file_type: "UNIT",
+          period_start: previewData.period_start,
+          period_end: previewData.period_end,
+          rows: previewData.rows,
+        };
+
+        // console.log("Uploading UNIT:", payload);
+        response = await uploadFuelUnits(payload);
+        fetchFuelUnits();
+
+        toast.success("Unit data uploaded successfully!");
+      }
+
+      // ---------------------------------
+      // 2️⃣ JURISDICTION FILE → Object format
+      // ---------------------------------
+      else if (previewData.file_type === "JURISDICTION") {
+        payload = {
+          file_type: "JURISDICTION",
+          period_start: previewData.period_start,
+          period_end: previewData.period_end,
+          data: previewData.rows,
+        };
+
+        // console.log(payload, "mypayload");
+        // 👉 CALL YOUR ZUSTAND API
+        response = await uploadJurisdictionData(payload);
+        fetchFuelUnits();
+        if (res?.message) {
+          toast.success(
+            `${res.message} Inserted: ${res.inserted}, Duplicates Skipped: ${res.skipped_duplicates}`
+          );
+        } else {
+          toast.success("Jurisdiction data uploaded successfully!");
+        }
+        // toast.success("Jurisdiction data uploaded successfully!");
+      } else {
+        toast.error("Invalid preview data format.");
+        return;
+      }
+
+      // console.log("Upload response:", response);
+
+      // Reset state
+      setPreviewModal(false);
+      setPreviewData(null);
       setFile(null);
     } catch (err) {
       const message = err.response?.data?.message || "Upload failed";
@@ -183,26 +350,68 @@ const FuelUnit = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {previewData.length > 0 ? (
+          {previewData ? (
             <div className="table-responsive">
-              <Table striped bordered>
-                <thead>
-                  <tr>
-                    {Object.keys(previewData[0]).map((header, i) => (
-                      <th key={i}>{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {previewData.map((row, idx) => (
-                    <tr key={idx}>
-                      {Object.values(row).map((value, i) => (
-                        <td key={i}>{value}</td>
+              {/* Show period on top */}
+              {previewData.period_start && previewData.period_end && (
+                <p>
+                  <strong>Period:</strong> {previewData.period_start} →{" "}
+                  {previewData.period_end}
+                </p>
+              )}
+
+              {/* UNIT TABLE */}
+              {previewData.file_type === "UNIT" &&
+                previewData.rows?.length > 0 && (
+                  <Table striped bordered>
+                    <thead>
+                      <tr>
+                        {Object.keys(previewData.rows[0]).map((header, i) => (
+                          <th key={i}>{header}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {previewData.rows.map((row, idx) => (
+                        <tr key={idx}>
+                          {Object.values(row).map((value, i) => (
+                            <td key={i}>{value}</td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+                    </tbody>
+                  </Table>
+                )}
+
+              {/* JURISDICTION TABLE */}
+              {previewData.file_type === "JURISDICTION" &&
+                previewData.rows?.length > 0 && (
+                  <Table striped bordered>
+                    <thead>
+                      <tr>
+                        <th>Vehicle</th>
+                        <th>Total</th>
+                        {Object.keys(previewData.rows[0].states).map(
+                          (st, i) => (
+                            <th key={i}>{st}</th>
+                          )
+                        )}
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {previewData.rows.map((row, idx) => (
+                        <tr key={idx}>
+                          <td>{row.vehicle}</td>
+                          <td>{row.total}</td>
+                          {Object.values(row.states).map((val, i) => (
+                            <td key={i}>{val}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
             </div>
           ) : (
             <p>No data found in file.</p>

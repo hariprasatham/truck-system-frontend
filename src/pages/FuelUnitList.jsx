@@ -13,43 +13,40 @@ const FuelUnitList = () => {
     toDate: "",
   });
 
-  const [allStates, setAllStates] = useState([]); // <-- always full list
+  const [allStates, setAllStates] = useState([]);
 
-  // ---------------------------------------------------
-  // Load ALL states only once
-  // ---------------------------------------------------
+  // ----------------------------------------------------------------
+  // Load ALL states (only once)
+  // ----------------------------------------------------------------
   const loadAllStates = async () => {
     try {
-      const data = await fetchFuelUnits({}); // NO FILTERS
+      const data = await fetchFuelUnits({});
       const states = [...new Set(data.map((item) => item.state))];
       setAllStates(states);
     } catch (err) {
-      toast.error("Failed to load states");
+      // toast.error("Failed to load states");
     }
   };
 
-  // ---------------------------------------------------
-  // Load units (with filters)
-  // ---------------------------------------------------
+  // ----------------------------------------------------------------
+  // Load filtered units
+  // ----------------------------------------------------------------
   const loadUnits = async (appliedFilters = filters) => {
     try {
       await fetchFuelUnits(appliedFilters);
     } catch (err) {
-      toast.error("Failed to fetch fuel units");
+      // toast.error("Failed to fetch fuel units");
     }
   };
 
-  // ---------------------------------------------------
-  // Load initial data + states
-  // ---------------------------------------------------
   useEffect(() => {
     loadAllStates();
     loadUnits({});
   }, []);
 
-  // ---------------------------------------------------
-  // Handle filter input change
-  // ---------------------------------------------------
+  // ----------------------------------------------------------------
+  // Handle input change
+  // ----------------------------------------------------------------
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
 
@@ -58,23 +55,22 @@ const FuelUnitList = () => {
       [name]: value,
     }));
 
-    // If selecting "All States" (empty)
     if (name === "state" && value === "") {
-      loadUnits({}); // <--- reload all
+      loadUnits({});
     }
   };
 
-  // ---------------------------------------------------
-  // Apply filters
-  // ---------------------------------------------------
+  // ----------------------------------------------------------------
+  // Apply Filters
+  // ----------------------------------------------------------------
   const applyFilters = () => {
-    const noFilters =
+    const empty =
       !filters.state &&
       !filters.unit_no &&
       !filters.fromDate &&
       !filters.toDate;
 
-    if (noFilters) {
+    if (empty) {
       toast.error("Please select at least one filter.");
       return;
     }
@@ -82,18 +78,20 @@ const FuelUnitList = () => {
     loadUnits(filters);
   };
 
-  // ---------------------------------------------------
-  // Reset filters
-  // ---------------------------------------------------
+  // ----------------------------------------------------------------
+  // Reset Filters
+  // ----------------------------------------------------------------
   const resetFilters = () => {
     const empty = { state: "", unit_no: "", fromDate: "", toDate: "" };
     setFilters(empty);
-    loadUnits({}); // load full list
+    loadUnits({});
+    fetchFuelUnits();
   };
 
+  // Format date
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
-    if (isNaN(d)) return dateStr;
+    if (isNaN(d)) return "-";
     return d.toLocaleDateString("en-GB");
   };
 
@@ -177,7 +175,7 @@ const FuelUnitList = () => {
               <tr>
                 <th>SL.NO</th>
                 <th>Unit No</th>
-                <th>Trip Date</th>
+                <th>Period</th>
                 <th>State</th>
                 <th>Fuel Unit</th>
               </tr>
@@ -187,9 +185,12 @@ const FuelUnitList = () => {
                 <tr key={row.id}>
                   <td>{i + 1}</td>
                   <td>{row.unit_no}</td>
-                  <td>{formatDate(row.date)}</td>
+                  <td>
+                    {formatDate(row.period_start_date)} →{" "}
+                    {formatDate(row.period_end_date)}
+                  </td>
                   <td>{row.state}</td>
-                  <td>{row.unit}</td>
+                  <td>{row.total}</td>
                 </tr>
               ))}
             </tbody>
