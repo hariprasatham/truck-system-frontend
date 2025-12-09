@@ -248,11 +248,18 @@ const FuelUnit = () => {
           rows: previewData.rows,
         };
 
-        // console.log("Uploading UNIT:", payload);
-        response = await uploadFuelUnits(payload);
-        fetchFuelUnits();
+        await uploadFuelUnits(payload);
 
-        toast.success("Unit data uploaded successfully!");
+        setPreviewModal(false);
+
+        setTimeout(() => {
+          setPreviewData(null);
+          setFile(null);
+        }, 300);
+
+        await fetchFuelUnits();
+
+        return;
       }
 
       // ---------------------------------
@@ -269,28 +276,21 @@ const FuelUnit = () => {
         // console.log(payload, "mypayload");
         // 👉 CALL YOUR ZUSTAND API
         response = await uploadJurisdictionData(payload);
+        setTimeout(() => {
+          setPreviewModal(false);
+          setPreviewData(null);
+          setFile(null);
+        }, [1000]);
         fetchFuelUnits();
-        if (res?.message) {
-          toast.success(
-            `${res.message} Inserted: ${res.inserted}, Duplicates Skipped: ${res.skipped_duplicates}`
-          );
-        } else {
-          toast.success("Jurisdiction data uploaded successfully!");
-        }
-        // toast.success("Jurisdiction data uploaded successfully!");
-      } else {
-        toast.error("Invalid preview data format.");
-        return;
+
+        // console.log(response, "mnmnmnmn");
       }
 
       // console.log("Upload response:", response);
 
       // Reset state
-      setPreviewModal(false);
-      setPreviewData(null);
-      setFile(null);
     } catch (err) {
-      const message = err.response?.data?.message || "Upload failed";
+      const message = response?.data?.data?.message || "Upload failed";
       toast.error(message);
     }
   };

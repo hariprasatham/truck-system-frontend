@@ -285,30 +285,64 @@ const useCompanyTruckStore = create((set, get) => ({
   },
 
   uploadFuelUnits: async (data) => {
-    set({ loading: true, truckError: null });
-    try {
-      const response = await api.post("/fuel/upload_fuel_unit", data);
-      set({ loading: false });
-      return response.data; // return data for component
-    } catch (error) {
-      const message = error.response?.data?.message || "Upload failed";
-      set({ loading: false, truckError: message });
-      throw error; // allow component to catch it
-    }
-  },
+  set({ loading: true, truckError: null });
+
+  try {
+    const res = await api.post("/fuel/upload_fuel_unit", data);
+    set({ loading: false });
+    await get().fetchFuelUnits();
+    // SUCCESS TOAST (from backend)
+    toast.success(res.data?.message || "Fuel unit data uploaded!");
+
+    return res.data;        // send it back to component
+
+  } catch (error) {
+    const message =
+      error.response?.data?.message || "Upload failed";
+
+    set({ loading: false, truckError: message });
+
+    toast.error(message);   // ERROR TOAST HERE
+
+    throw error;
+  }
+},
+
 
   uploadJurisdictionData: async (data) => {
     set({ loading: true, truckError: null });
+  
     try {
       const response = await api.post("/fuel/upload_judis_fuel_unit", data);
       set({ loading: false });
-      return response.data; // return data for component
+      await get().fetchFuelUnits();
+      const res = response.data;
+  
+      // 🔔 Show toast directly here
+      if (res?.results) {
+        toast.success(
+          `${res.message} | Inserted: ${res.results.inserted}, ` +
+          `Skipped: ${res.results.skipped_duplicates}`
+        );
+        // fetchFuelUnits()
+      } else {
+        toast.success("Jurisdiction data uploaded successfully!");
+      }
+  
+      return res; // return whole response (not just .data)
     } catch (error) {
-      const message = error.response?.data?.message || "Upload failed";
-      set({ loading: false, truckError: message });
-      throw error; // allow component to catch it
+      set({ loading: false });
+  
+      const message =
+        error.response?.data?.message || "Failed to upload jurisdiction data";
+  
+      set({ truckError: message });
+  
+      toast.error(message); // 🔔 error toast here
+      throw error;
     }
   },
+  
 
   // Fetch fuel units with optional filters
   fetchFuelUnits: async (filters = {}) => {
