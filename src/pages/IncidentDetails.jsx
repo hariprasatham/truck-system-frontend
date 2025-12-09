@@ -459,7 +459,7 @@ useEffect(() => {
         <Row>
           <InfoBox
             label="Supervisor Name"
-            value={incident?.supervisor_name || "N/A"}
+            value={incident?.supervisor?.username || "N/A"}
           />
 
           <InfoBox

@@ -86,8 +86,8 @@ const IncidentManagement = () => {
       sortable: true,
     },
     {
-      name: "supervisor_name",
-      selector: (row) => row?.supervisor_name,
+      name: "driver_name",
+      selector: (row) => row?.driver?.first_name + " " + row?.driver?.last_name,
       sortable: true,
     },
     {
