@@ -297,6 +297,19 @@ const useCompanyTruckStore = create((set, get) => ({
     }
   },
 
+  uploadJurisdictionData: async (data) => {
+    set({ loading: true, truckError: null });
+    try {
+      const response = await api.post("/fuel/upload_judis_fuel_unit", data);
+      set({ loading: false });
+      return response.data; // return data for component
+    } catch (error) {
+      const message = error.response?.data?.message || "Upload failed";
+      set({ loading: false, truckError: message });
+      throw error; // allow component to catch it
+    }
+  },
+
   // Fetch fuel units with optional filters
   fetchFuelUnits: async (filters = {}) => {
     set({ loading: true, truckError: null });
