@@ -59,6 +59,7 @@ const useCompaniesStore = create((set, get) => ({
   createCompany: async (companyData) => {
     set({ loading: true, error: null, globalLoading: true });
     try {
+      // console.log(companyData)
       const response = await api.post('/company/register', companyData);
       set(state => ({
         companies: [response.data, ...state.companies],

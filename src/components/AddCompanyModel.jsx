@@ -4,12 +4,23 @@ import { Modal, Button, Form } from "react-bootstrap";
 const AddCompanyModal = ({ show, handleClose, handleSave }) => {
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
+  const [isUS, setIsUS] = useState(false);
+  const [isCanada, setIsCanada] = useState(false);
 
   const onSubmit = (e) => {
     e.preventDefault();
-    handleSave({ company_name:companyName, description: description });
+
+    handleSave({
+      company_name: companyName,
+      description: description,
+      is_us: isUS,
+      is_canada: isCanada,
+    });
+
     setCompanyName("");
     setDescription("");
+    setIsUS(false);
+    setIsCanada(false);
   };
 
   return (
@@ -36,6 +47,21 @@ const AddCompanyModal = ({ show, handleClose, handleSave }) => {
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Company Region</Form.Label>
+            <Form.Check
+              type="checkbox"
+              label="US"
+              checked={isUS}
+              onChange={(e) => setIsUS(e.target.checked)}
+            />
+            <Form.Check
+              type="checkbox"
+              label="Canada"
+              checked={isCanada}
+              onChange={(e) => setIsCanada(e.target.checked)}
             />
           </Form.Group>
         </Modal.Body>

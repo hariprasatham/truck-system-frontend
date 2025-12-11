@@ -36,6 +36,8 @@ import Brand from "./pages/Brand";
 import FuelUnit from "./pages/FuelUnit";
 import IncidentDetails from "./pages/IncidentDetails";
 import FleetManagement from "./pages/FleetManagement";
+import Master from "./pages/MasterManagement/Master";
+import Authority from "./pages/Authority";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
@@ -101,7 +103,9 @@ const App = () => {
                   path="/incident-management"
                   element={<IncidentManagement />}
                 />
+                <Route path="/master-management" element={<Master />} />
                 <Route path="/fleet" element={<FleetManagement />} />
+                <Route path="/authorities" element={<Authority />} />
                 <Route
                   path="/incident-management/:incidentId"
                   element={<IncidentDetails />}
