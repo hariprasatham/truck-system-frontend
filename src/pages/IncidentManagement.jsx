@@ -52,17 +52,17 @@ const IncidentManagement = () => {
       width: "8%",
     },
     {
-      name: "accident_date",
+      name: "Accident Date",
       selector: (row) => row?.accident_date,
       sortable: true,
     },
     {
-      name: "accident_time",
+      name: "Accident Time",
       selector: (row) => row?.accident_time,
       sortable: true,
     },
     {
-      name: "accident_description",
+      name: "Accident Description",
       selector: (row) => row?.accident_description,
       sortable: true,
     },
@@ -81,12 +81,12 @@ const IncidentManagement = () => {
       ),
     },
     {
-      name: "truck_no",
+      name: "Truck No",
       selector: (row) => row?.truck?.truck_no,
       sortable: true,
     },
     {
-      name: "driver_name",
+      name: "Driver Name",
       selector: (row) => row?.driver?.first_name + " " + row?.driver?.last_name,
       sortable: true,
     },
