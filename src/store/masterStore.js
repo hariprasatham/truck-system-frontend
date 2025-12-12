@@ -7,6 +7,12 @@ const useMasterStore = create((set,get) => ({
   loading: false,           // for form submit
   tableLoading: false,      // for table loading
   error: null,
+  company: null,
+  usAuthorities: [],
+  canadaAuthorities: [],
+  active: [],
+  history: [],
+  requested_by: null,
 
   // ===========================
   // FETCH ALL AUTHORITIES
@@ -108,6 +114,71 @@ const useMasterStore = create((set,get) => ({
       throw err;
     }
   },
+
+  fetchAuthoritiesByCompany: async () => {
+    set({ loading: true, error: null });
+
+    try {
+      const res = await api.get("/authority/byCompany");
+
+      set({
+        company: res.data.results.company,
+        usAuthorities: res.data.results.usAuthorities,
+        canadaAuthorities: res.data.results.canadaAuthorities,
+        loading: false,
+      });
+
+      return res.data.results;
+
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to load authorities";
+      set({ loading: false, error: msg });
+      toast.error(msg);
+      console.log("Authority store error:", err);
+    }
+  },
+
+
+  applyAuthorities: async (payload) => {
+    try {
+      set({ loading: true });
+  
+      const res = await api.post("/authority/apply", payload);
+  
+      toast.success("Authorities applied successfully!");
+  
+      return res.data;
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to apply authorities";
+      toast.error(msg);
+      throw err;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  fetchAuthorityList: async () => {
+    try {
+      set({ loading: true });
+
+      const res = await api.get("/authority/list");
+        console.log(res,"ressss")
+      set({
+        applications: res.data.active || [],
+        // history: res.data.history || [],
+        // requested_by: res.data.requested_by || null,
+        loading: false,
+      });
+
+      return res.data.active;
+    } catch (err) {
+      console.error("Error fetching authority list:", err);
+      set({ loading: false });
+    }
+  },
+  
+  
+
   
 }));
 

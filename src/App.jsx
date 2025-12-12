@@ -38,6 +38,7 @@ import IncidentDetails from "./pages/IncidentDetails";
 import FleetManagement from "./pages/FleetManagement";
 import Master from "./pages/MasterManagement/Master";
 import Authority from "./pages/Authority";
+import ApplyList from "./pages/ApplyList";
 
 const App = () => {
   window.bootstrap = bootstrap; // ✅ Make Bootstrap globally available
@@ -106,6 +107,7 @@ const App = () => {
                 <Route path="/master-management" element={<Master />} />
                 <Route path="/fleet" element={<FleetManagement />} />
                 <Route path="/authorities" element={<Authority />} />
+                <Route path="/apply-list" element={<ApplyList />} />
                 <Route
                   path="/incident-management/:incidentId"
                   element={<IncidentDetails />}
