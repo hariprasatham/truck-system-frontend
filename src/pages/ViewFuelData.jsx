@@ -43,18 +43,18 @@ const ViewFuelData = () => {
       sortable: true,
     },
     {
-      name: "Gas Quantity",
+      name: "Diesel Quantity",
       selector: (row) => row.total_qty.toFixed(3),
       sortable: true,
       right: true,
     },
 
-    {
-      name: "Total Quantity",
-      selector: (row) => parseFloat(row.total_final_amount).toFixed(3),
-      sortable: true,
-      right: true,
-    },
+    // {
+    //   name: "Total Quantity",
+    //   selector: (row) => parseFloat(row.total_final_amount).toFixed(3),
+    //   sortable: true,
+    //   right: true,
+    // },
     {
       name: "Count",
       selector: (row) => row.count,
@@ -88,23 +88,23 @@ const ViewFuelData = () => {
       width: "120px",
     },
     {
-      name: "Quantity",
+      name: "Diesel Quantity",
       selector: (row) => parseFloat(row.qty).toFixed(2),
       sortable: true,
       right: true,
     },
-    {
-      name: "Amount",
-      selector: (row) => parseFloat(row.final_amount).toFixed(2),
-      sortable: true,
-      right: true,
-    },
-    {
-      name: "Unit Price",
-      selector: (row) => (row.final_amount / row.qty).toFixed(2),
-      sortable: true,
-      right: true,
-    },
+    // {
+    //   name: "Amount",
+    //   selector: (row) => parseFloat(row.final_amount).toFixed(2),
+    //   sortable: true,
+    //   right: true,
+    // },
+    // {
+    //   name: "Unit Price",
+    //   selector: (row) => (row.final_amount / row.qty).toFixed(2),
+    //   sortable: true,
+    //   right: true,
+    // },
   ];
 
   // Custom expandable component
