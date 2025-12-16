@@ -107,48 +107,48 @@ const useIncidentManagementStore = create(
       }
     },
     getWitnessAudio: async (filePath) => {
-  try {
-    const response = await api.get(`/accidentReport/evidence`, {
-      params: { filePath },
-      responseType: 'arraybuffer',
-    });
-    // MIME type mappings
-    const mimeTypes = {
-      '.mp3': 'audio/mpeg',
-      '.wav': 'audio/wav',
-      '.ogg': 'audio/ogg',
-      '.m4a': 'audio/mp4',
-      '.aac': 'audio/aac'
-    };
-    // Try to determine the MIME type from the file extension
-    let mimeType = 'audio/mpeg'; // default
-    if (filePath) {
-      const ext = `.${filePath.split('.').pop().toLowerCase()}`;
-      mimeType = mimeTypes[ext] || 'audio/mpeg';
-    }
-    const blob = new Blob([response.data], { type: mimeType });
-    
-    console.log('Audio blob created:', {
-      size: blob.size,
-      type: mimeType,
-      filePath,
-      blobType: blob.type
-    });
-    return {
-      blob,
-      type: mimeType
-    };
-  } catch (error) {
-    console.error('Error in getWitnessAudio:', {
-      error,
-      filePath,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data
-    });
-    return null;
-  }
-},
+      try {
+        const response = await api.get(`/accidentReport/evidence`, {
+          params: { filePath },
+          responseType: 'arraybuffer',
+        });
+        // MIME type mappings
+        const mimeTypes = {
+          '.mp3': 'audio/mpeg',
+          '.wav': 'audio/wav',
+          '.ogg': 'audio/ogg',
+          '.m4a': 'audio/mp4',
+          '.aac': 'audio/aac'
+        };
+        // Try to determine the MIME type from the file extension
+        let mimeType = 'audio/mpeg'; // default
+        if (filePath) {
+          const ext = `.${filePath.split('.').pop().toLowerCase()}`;
+          mimeType = mimeTypes[ext] || 'audio/mpeg';
+        }
+        const blob = new Blob([response.data], { type: mimeType });
+
+        console.log('Audio blob created:', {
+          size: blob.size,
+          type: mimeType,
+          filePath,
+          blobType: blob.type
+        });
+        return {
+          blob,
+          type: mimeType
+        };
+      } catch (error) {
+        console.error('Error in getWitnessAudio:', {
+          error,
+          filePath,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+        return null;
+      }
+    },
 
     deleteIncident: async (id) => {
       try {
@@ -227,15 +227,31 @@ const useIncidentManagementStore = create(
       }
     },
 
-    downloadReport: async (incidentId)=>{
+    downloadReport: async (incidentId) => {
       try {
         set({ loading: true, error: null });
         const response = await api.get(`/accidentReport/download/${incidentId}`, {
-         responseType: 'blob'
+          responseType: 'blob'
         });
         set({ loading: false });
         return response.data;
-        
+
+      } catch (error) {
+        set({ loading: false, error: error.response?.data?.message || `Error downloading report` });
+        console.error('Error downloading report:', error);
+        throw error;
+      }
+    },
+
+    downloadAllReports: async (incidentId) => {
+      try {
+        set({ loading: true, error: null });
+        const response = await api.get(`/accidentReport/downloadAllEvidence/${incidentId}`, {
+          responseType: 'blob'
+        });
+        set({ loading: false });
+        return response.data;
+
       } catch (error) {
         set({ loading: false, error: error.response?.data?.message || `Error downloading report` });
         console.error('Error downloading report:', error);

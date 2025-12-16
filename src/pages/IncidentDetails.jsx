@@ -33,7 +33,8 @@ const IncidentDetails = () => {
     getMeetingNotes,
     meetingNotes,
     getWitnessAudio,
-    downloadReport
+    downloadReport,
+    downloadAllReports
   } = useIncidentManagementStore();
 
   const [mediaData, setMediaData] = useState({});
@@ -264,7 +265,24 @@ const IncidentDetails = () => {
     }
   };
 
-  console.log("incident?.other_vehicles", incident?.other_vehicles)
+const handleDownloadAll = async () => {
+  try {
+    const blob = await downloadAllReports(incidentId);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `incident-${incidentId}-evidence.zip`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    toast.success('All evidence downloaded successfully');
+  } catch (error) {
+    console.error('Error downloading evidence:', error);
+    toast.error(error.response?.data?.message || 'Failed to download evidence');
+  }
+};
+
 
   const location = incident?.location || null;
   const otherVehicles = incident?.other_vehicles || [];
@@ -319,9 +337,9 @@ const IncidentDetails = () => {
           <Button variant="primary" className="me-2" onClick={() => downloadAccidentReportPdf()}>
             <i className="bi bi-printer" /> Print Report
           </Button>
-          {/* <Button variant="primary" onClick={() => window.print()}>
-            <i className="bi bi-printer" /> Print Report
-          </Button> */}
+          <Button variant="primary" onClick={() => handleDownloadAll()}>
+            <i className="bi bi-download" /> Download All Evidence
+          </Button>
         </div>
       </div>
 
