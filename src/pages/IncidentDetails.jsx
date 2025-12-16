@@ -18,6 +18,7 @@ import { toast } from "react-hot-toast";
 import moment from 'moment';
 import ViewImageModal from "../components/ViewImageModal";
 import MeetingPointsCollectorModal from "../components/MeetingPointsCollectorModal";
+import MapModal from "../components/MapModal";
 
 const IncidentDetails = () => {
   const { incidentId = "" } = useParams();
@@ -49,6 +50,8 @@ const IncidentDetails = () => {
     meetingNotes: "",
     date: ""
   })
+
+  const [showMapModal, setShowMapModal] = useState(false);
 
 
   const [statusForm, setStatusForm] = useState({
@@ -195,6 +198,10 @@ const IncidentDetails = () => {
     return moment(dateTimeString)?.format('MMMM D, YYYY h:mm A');
   };
 
+  const handleOpenMap = () => {
+  setShowMapModal(true);
+};
+
   const handleStatusUpdate = async () => {
     if (!statusForm.status) return;
 
@@ -238,24 +245,24 @@ const IncidentDetails = () => {
     setShowStatusModal(true);
   };
 
-const downloadAccidentReportPdf = async () => {
-  try {
-    const response = await downloadReport(incidentId);
-    const blob = new Blob([response], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `accident-report-${incidentId}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url); // Clean up the URL object
-    toast.success('Accident report downloaded successfully');
-  } catch (error) {
-    console.error('Error downloading accident report:', error);
-    toast.error(error.response?.data?.message || 'Failed to download accident report');
-  }
-};
+  const downloadAccidentReportPdf = async () => {
+    try {
+      const response = await downloadReport(incidentId);
+      const blob = new Blob([response], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `accident-report-${incidentId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url); // Clean up the URL object
+      toast.success('Accident report downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading accident report:', error);
+      toast.error(error.response?.data?.message || 'Failed to download accident report');
+    }
+  };
 
   console.log("incident?.other_vehicles", incident?.other_vehicles)
 
@@ -350,12 +357,20 @@ const downloadAccidentReportPdf = async () => {
 
             <InfoBox
               label="Location"
-              value={location ?
-                `${location?.address || ''}, ${location?.city || ''}` :
-                "N/A"
+              value={
+                location ? (
+                  <Button
+                    variant="link"
+                    className="p-0 text-decoration-none"
+                  onClick={handleOpenMap}
+                  >
+                    {`${location?.latitude || ''}, ${location?.longitude || ''} (View Map)`}
+                  </Button>
+                ) : (
+                  "N/A"
+                )
               }
             />
-
             <InfoBox
               label="Province"
               value={incident?.state?.name || "N/A"}
@@ -405,7 +420,7 @@ const downloadAccidentReportPdf = async () => {
                     <td>{vehicle?.insurance_provider || "N/A"}</td>
                     <td>{vehicle?.contact_number || "N/A"}</td>
                     <td style={{ maxWidth: '200px', wordWrap: 'break-word' }}>
-                      {vehicle?.vehicle_damage + "ahsvdfgsa asdfvashdf asvdfsvdfg agvsadf aghvsdf vagsdfv asdfvsah fv advfsj afk" || "N/A"}
+                      {vehicle?.vehicle_damage || "N/A"}
                     </td>
                   </tr>
                 ))
@@ -498,8 +513,8 @@ const downloadAccidentReportPdf = async () => {
             value={incident?.officer_name || "N/A"}
           />
           <InfoBox
-            label="Badge Number"
-            value={incident?.badge_number || "N/A"}
+            label="Officer Number"
+            value={incident?.officer_number || "N/A"}
           />
           <InfoBox
             label="Police Department"
@@ -686,7 +701,7 @@ const downloadAccidentReportPdf = async () => {
             value={meetingNotes?.date ? formatDate(meetingNotes?.date) : "Not scheduled"}
           />
           <InfoBox
-            label="Safety Officer"
+            label="Supervisor Name"
             value={incident?.supervisor?.username || "N/A"}
           />
           <InfoBox
@@ -700,7 +715,7 @@ const downloadAccidentReportPdf = async () => {
               disabled={incident?.status === 'closed'}
             >
               <i className="bi bi-plus-circle me-2" />
-              {incident?.meeting_date ? "Update Meeting Details" : "Record Meeting Details"}
+              {incident?.meeting_date ? "Update Meeting Points" : "Add Meeting Points"}
             </Button>
           </Col>
         </Row>
@@ -738,6 +753,12 @@ const downloadAccidentReportPdf = async () => {
                 <option value="under_review">Under Review</option>
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
+                <option value="warning">Warning</option>
+                <option value="refer_to_higher_management">Refer To Higher Management</option>
+                <option value="refer_to_training">Refer To Training</option>
+                <option value="insurance_claim_initiated">Insurance Claim Initiated</option>
+                <option value="need_to_intiate_insurance_claim">Need to Intiate Insurance Claim</option>
+                <option value="closed">Closed</option>
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -781,6 +802,12 @@ const downloadAccidentReportPdf = async () => {
         onSaveMeeting={handleSaveMeeting}
         meetingForm={meetingForm}
         SetMeetingForm={SetMeetingForm}
+      />
+
+      <MapModal
+        showMapModal={showMapModal}
+        setShowMapModal={setShowMapModal}
+        location={location}
       />
 
       <GlobalLoader loading={loading} />
