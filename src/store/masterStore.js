@@ -13,6 +13,10 @@ const useMasterStore = create((set,get) => ({
   active: [],
   history: [],
   requested_by: null,
+  appliedAuthorities: {
+    us: [],
+    canada: []
+  },
 
   // ===========================
   // FETCH ALL AUTHORITIES
@@ -174,6 +178,53 @@ const useMasterStore = create((set,get) => ({
     } catch (err) {
       console.error("Error fetching authority list:", err);
       set({ loading: false });
+    }
+  },
+  
+  getAppliedAuthorities: async () => {
+    try {
+      set({ loading: true });
+  
+      const res = await api.get("/authority/appliedAuthority");
+  
+      set({
+        appliedAuthorities: res.data,
+        loading: false
+      });
+  
+      return res.data;
+    } catch (error) {
+      set({ loading: false });
+      console.error("Failed to fetch applied authorities", error);
+      throw error;
+    }
+  },
+
+  PdfapplyAuthority: async (authorityId, pdf) => {
+    set({ loading: true, error: null });
+  
+    try {
+      const response = await api.post(
+        "/authority/pdf-authority-apply",
+        {
+          authority_id: authorityId,
+          document: pdf, // base64 object
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      toast.success("Document uploaded successfully!");
+      set({ loading: false });
+      return response.data;
+    } catch (error) {
+      const msg =
+        error.response?.data?.message || "Failed to upload authority document";
+  
+      set({ loading: false, error: msg });
+      throw error;
     }
   },
   

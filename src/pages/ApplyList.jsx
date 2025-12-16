@@ -10,22 +10,22 @@ const ExpandableComponent = ({ data }) => {
     <div style={{ padding: "10px" }}>
       {/* Tabs for Active / History */}
       <div className="mb-2">
-        <button
+        {/* <button
           className={`btn btn-sm me-2 ${
             tab === "active" ? "btn-primary" : "btn-outline-primary"
           }`}
           onClick={() => setTab("active")}
         >
           Active Applications
-        </button>
-        <button
+        </button> */}
+        {/* <button
           className={`btn btn-sm ${
             tab === "history" ? "btn-danger" : "btn-outline-danger"
           }`}
           onClick={() => setTab("history")}
         >
           History Applications
-        </button>
+        </button> */}
       </div>
 
       {listToShow.length === 0 ? (
@@ -38,6 +38,8 @@ const ExpandableComponent = ({ data }) => {
               <th>Authority</th>
               <th>Country</th>
               {/* <th>Applied Count</th> */}
+              <th style={{ width: "120px" }}>Document</th>
+
               <th>Applied At</th>
             </tr>
           </thead>
@@ -49,6 +51,22 @@ const ExpandableComponent = ({ data }) => {
                 <td>
                   {item.is_us && "US "}
                   {item.is_canada && "Canada"}
+                </td>
+                <td>
+                  {item?.document_path ? (
+                    <a
+                      href={`/${item.document_path}`} // path to your PDF
+                      download={`${item.Authority.authority_name}.pdf`} // generate filename dynamically
+                      target="_blank" // open in new tab
+                      rel="noreferrer"
+                      className="btn btn-sm btn-outline-success"
+                      title="View/Download PDF"
+                    >
+                      <i className="bi bi-file-pdf" />
+                    </a>
+                  ) : (
+                    <span className="text-muted">-</span>
+                  )}
                 </td>
                 {/* <td>{item.applies_count}</td> */}
                 <td>{new Date(item.createdAt).toLocaleString()}</td>
