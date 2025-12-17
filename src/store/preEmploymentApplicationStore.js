@@ -123,6 +123,69 @@ const usePreEmploymentApplicationStore = create((set, get) => ({
       throw error;
     }
   },
+
+  // Update status action
+  updateApplicationStatus: async (id, status) => {
+    set({ loading: true, error: null });
+
+    try {
+      const response = await api.patch(
+        `/preEmploymentApplication/patch/${id}/status`,
+        { status }
+      );
+
+      // Refresh list after status update
+      await get().fetchAllApplications();
+
+      toast.success(`Application ${status.replaceAll("_", " ")} successfully`);
+      set({ loading: false });
+
+      return response.data.results;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to update application status"
+      );
+
+      set({
+        error:
+          error.response?.data?.message ||
+          "Failed to update application status",
+        loading: false,
+      });
+
+      throw error;
+    }
+  },
+
+  // Convert to driver action
+  convertToDriver: async (id) => {
+    set({ loading: true, error: null });
+
+    try {
+      const response = await api.put(`/preEmploymentApplication/convertdriver/${id}`);
+
+      // Refresh list after conversion
+      await get().fetchAllApplications();
+
+      toast.success("Application converted to driver successfully");
+      set({ loading: false });
+
+      return response.data.driver_id;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to convert application"
+      );
+
+      set({
+        error:
+          error.response?.data?.message ||
+          "Failed to convert application",
+        loading: false,
+      });
+
+      throw error;
+    }
+  },
   clearError: () => set({ error: null })
 }));
 
