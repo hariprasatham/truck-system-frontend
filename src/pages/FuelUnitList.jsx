@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Table, Form, Button, Row, Col } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import useCompanyDriverStore from "../store/companyTruckStore";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import moment from "moment";
 
 const FuelUnitList = () => {
   const { fetchFuelUnits, fuelUnits, loading } = useCompanyDriverStore();
@@ -44,6 +47,35 @@ const FuelUnitList = () => {
     loadUnits({});
   }, []);
 
+  const exportFuelUnitsPDF = (fuelUnits) => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(14);
+    doc.text("Fuel Units Report", 14, 15);
+
+    const tableColumn = ["SL.NO", "Unit No", "Period", "State", "Kilometer"];
+
+    const tableRows = fuelUnits.map((row, index) => [
+      index + 1,
+      row.unit_no,
+      `${moment(row.period_start_date).format("DD-MM-YYYY")} - ${moment(
+        row.period_end_date
+      ).format("DD-MM-YYYY")}`,
+      row.state,
+      row.total,
+    ]);
+
+    // ✅ CALL autoTable FUNCTION
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 25,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save("fuel-units-report.pdf");
+  };
   // ----------------------------------------------------------------
   // Handle input change
   // ----------------------------------------------------------------
@@ -100,7 +132,7 @@ const FuelUnitList = () => {
       {/* Filters */}
       <Form className="mb-3">
         <Row className="align-items-end">
-          <Col md={3}>
+          <Col lg={2} md={2}>
             <Form.Group>
               <Form.Label>State</Form.Label>
               <Form.Select
@@ -118,7 +150,7 @@ const FuelUnitList = () => {
             </Form.Group>
           </Col>
 
-          <Col md={3}>
+          <Col lg={2} md={2}>
             <Form.Group>
               <Form.Label>Unit No</Form.Label>
               <Form.Control
@@ -130,7 +162,7 @@ const FuelUnitList = () => {
             </Form.Group>
           </Col>
 
-          <Col md={2}>
+          <Col md={2} lg={2}>
             <Form.Group>
               <Form.Label>From Date</Form.Label>
               <Form.Control
@@ -142,7 +174,7 @@ const FuelUnitList = () => {
             </Form.Group>
           </Col>
 
-          <Col md={2}>
+          <Col md={2} lg={2}>
             <Form.Group>
               <Form.Label>To Date</Form.Label>
               <Form.Control
@@ -154,13 +186,23 @@ const FuelUnitList = () => {
             </Form.Group>
           </Col>
 
-          <Col md={2}>
-            <Button variant="primary" className="me-2" onClick={applyFilters}>
-              Apply
-            </Button>
-            <Button variant="secondary" onClick={resetFilters}>
-              Reset
-            </Button>
+          <Col lg={4} md={4}>
+            <div className="dis_spce">
+              <Button variant="primary" className="me-2" onClick={applyFilters}>
+                Apply
+              </Button>
+              <Button variant="secondary" onClick={resetFilters}>
+                Reset
+              </Button>
+              <Button
+                variant="danger"
+                style={{ marginLeft: "0.5rem" }}
+                disabled={!fuelUnits?.length}
+                onClick={() => exportFuelUnitsPDF(fuelUnits)}
+              >
+                Export PDF
+              </Button>
+            </div>
           </Col>
         </Row>
       </Form>
@@ -177,7 +219,7 @@ const FuelUnitList = () => {
                 <th>Unit No</th>
                 <th>Period</th>
                 <th>State</th>
-                <th>Fuel Unit</th>
+                <th>Kilometer</th>
               </tr>
             </thead>
             <tbody>
@@ -186,7 +228,7 @@ const FuelUnitList = () => {
                   <td>{i + 1}</td>
                   <td>{row.unit_no}</td>
                   <td>
-                    {formatDate(row.period_start_date)} →{" "}
+                    {formatDate(row.period_start_date)} -{" "}
                     {formatDate(row.period_end_date)}
                   </td>
                   <td>{row.state}</td>
