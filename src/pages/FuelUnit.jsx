@@ -11,8 +11,9 @@ const FuelUnit = () => {
   const [previewModal, setPreviewModal] = useState(false);
   const [previewData, setPreviewData] = useState([]);
   const [file, setFile] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const { uploadFuelUnits, loading, uploadJurisdictionData } =
+  const { uploadFuelUnits, loading, uploadJurisdictionData, fetchFuelUnits } =
     useCompanyDriverStore();
 
   // --------------------
@@ -20,6 +21,10 @@ const FuelUnit = () => {
   // --------------------
   const openUploadPopup = () => setFileModal(true);
   const closeUploadPopup = () => setFileModal(false);
+
+  const handleUploadSuccess = () => {
+    setReloadKey((prev) => prev + 1);
+  };
 
   // --------------------
   // HELPER FUNCTIONS
@@ -40,9 +45,6 @@ const FuelUnit = () => {
     });
   };
 
-  // --------------------
-  // FILE UPLOAD HANDLING
-  // --------------------
   const handleFileChange = (e) => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return;
@@ -77,11 +79,14 @@ const FuelUnit = () => {
     const isUnitFile = match[1].startsWith("Unit_");
     const unitNumber = isUnitFile ? match[2] : null;
 
-    const startYear = match[3];
+    const startYear = parseInt(match[3], 10);
     const startMonth = parseInt(match[4], 10);
-    const endYear = match[5];
+    const endYear = parseInt(match[5], 10);
     const endMonth = parseInt(match[6], 10);
 
+    // ----------------------------
+    // QUARTER VALIDATION
+    // ----------------------------
     const validQuarters = [
       { start: 1, end: 3 },
       { start: 4, end: 6 },
@@ -99,9 +104,22 @@ const FuelUnit = () => {
       return;
     }
 
+    // ----------------------------
+    // PERIOD CALCULATION
+    // ----------------------------
+    const period_start = `${startYear}-${String(startMonth).padStart(
+      2,
+      "0"
+    )}-01`;
+
+    // Last day of quarter month
+    const period_end = formatDate(new Date(endYear, endMonth, 0));
+
     setFile(uploadedFile);
 
-    // PARSE CONTENT
+    // ----------------------------
+    // FILE PARSING
+    // ----------------------------
     const reader = new FileReader();
 
     reader.onload = (event) => {
@@ -111,11 +129,10 @@ const FuelUnit = () => {
 
       let json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-      // ------------------------------------
-      // 1️⃣ UNIT FILE → KEEP YOUR OLD LOGIC
-      // ------------------------------------
+      // =====================================================
+      // 1️⃣ UNIT FILE
+      // =====================================================
       if (isUnitFile) {
-        // Remove any rows where Trip Date is missing or is "Overall Totals"
         const unitRows = json
           .filter(
             (row) =>
@@ -143,19 +160,15 @@ const FuelUnit = () => {
           })
           .filter((row) => row["Trip Date"]);
 
-        if (unitRows.length === 0) {
+        if (!unitRows.length) {
           toast.error("No valid Trip Date rows found.");
           return;
         }
 
-        // Set period at top level, not inside each row
         setPreviewData({
           file_type: "UNIT",
-          period_start: `${startYear}-${String(startMonth).padStart(
-            2,
-            "0"
-          )}-01`,
-          period_end: `${endYear}-${String(endMonth).padStart(2, "0")}-01`,
+          period_start,
+          period_end,
           rows: unitRows,
         });
 
@@ -164,58 +177,46 @@ const FuelUnit = () => {
         return;
       }
 
-      // ----------------------------
-      // 2️⃣ JURISDICTION PARSING
-      // ----------------------------
-      else {
-        // Remove totals row
-        json = json.filter(
-          (row) =>
-            row["Vehicle"] &&
-            row["Vehicle"].toString().trim().toLowerCase() !== "overall totals"
-        );
+      // =====================================================
+      // 2️⃣ JURISDICTION FILE
+      // =====================================================
+      json = json.filter(
+        (row) =>
+          row["Vehicle"] &&
+          row["Vehicle"].toString().trim().toLowerCase() !== "overall totals"
+      );
 
-        if (json.length === 0) {
-          toast.error("No jurisdiction rows found.");
-          return;
-        }
-
-        // Extract dynamic state columns (everything except Vehicle + Total)
-        const allColumns = Object.keys(json[0]);
-        const stateColumns = allColumns.filter(
-          (col) => col !== "Vehicle" && col !== "Total"
-        );
-
-        // Convert into structured data
-        const jurisdictionFormatted = json.map((row) => {
-          const states = {};
-          stateColumns.forEach((state) => {
-            const val = row[state];
-            states[state] = val === "-" || val === "" ? 0 : val;
-          });
-
-          return {
-            vehicle: row["Vehicle"],
-            total: row["Total"] || 0,
-            states,
-            file_type: "JURISDICTION",
-          };
-        });
-
-        // ⬇️ ADD THE PERIOD FROM FILENAME
-        setPreviewData({
-          period_start: `${startYear}-${String(startMonth).padStart(
-            2,
-            "0"
-          )}-01`,
-          period_end: `${endYear}-${String(endMonth).padStart(2, "0")}-01`,
-          rows: jurisdictionFormatted,
-          file_type: "JURISDICTION",
-        });
-
-        setFileModal(false);
-        setPreviewModal(true);
+      if (!json.length) {
+        toast.error("No jurisdiction rows found.");
+        return;
       }
+
+      const allColumns = Object.keys(json[0]);
+      const stateColumns = allColumns.filter(
+        (col) => col !== "Vehicle" && col !== "Total"
+      );
+
+      const jurisdictionFormatted = json.map((row) => {
+        const states = {};
+        stateColumns.forEach((state) => {
+          const val = row[state];
+          states[state] = val === "-" || val === "" ? 0 : val;
+        });
+
+        return {
+          vehicle: row["Vehicle"],
+          total: row["Total"] || 0,
+          states,
+          file_type: "JURISDICTION",
+        };
+      });
+
+      setPreviewData({
+        file_type: "JURISDICTION",
+        period_start,
+        period_end,
+        rows: jurisdictionFormatted,
+      });
 
       setFileModal(false);
       setPreviewModal(true);
@@ -257,9 +258,10 @@ const FuelUnit = () => {
           setFile(null);
         }, 300);
 
-        await fetchFuelUnits();
+        fetchFuelUnits();
+        handleUploadSuccess();
 
-        return;
+        // return;
       }
 
       // ---------------------------------
@@ -282,6 +284,7 @@ const FuelUnit = () => {
           setFile(null);
         }, [1000]);
         fetchFuelUnits();
+        handleUploadSuccess();
 
         // console.log(response, "mnmnmnmn");
       }
@@ -290,7 +293,8 @@ const FuelUnit = () => {
 
       // Reset state
     } catch (err) {
-      const message = response?.data?.data?.message || "Upload failed";
+      console.log(err);
+      const message = err?.data?.data?.message || "Upload failed";
       toast.error(message);
     }
   };
@@ -303,7 +307,7 @@ const FuelUnit = () => {
           <i className="bi bi-plus-circle"></i> Add Fuel Unit
         </Button>
       </div>
-      <FuelUnitList />
+      <FuelUnitList key={reloadKey} />
 
       {/* Choose File Modal */}
       <Modal show={fileModal} onHide={closeUploadPopup} centered>

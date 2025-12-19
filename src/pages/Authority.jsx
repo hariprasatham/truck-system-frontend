@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Spinner, Card, Button, Form, Table, Modal } from "react-bootstrap";
 import useMasterStore from "../store/masterStore";
+import moment from "moment";
 
 const Authority = () => {
   const {
@@ -9,6 +10,7 @@ const Authority = () => {
     getAppliedAuthorities,
     loading,
     PdfapplyAuthority,
+    downloadAuthorityPdf,
   } = useMasterStore();
 
   const [company, setCompany] = useState(null);
@@ -121,42 +123,46 @@ const Authority = () => {
       ) : (
         <>
           {/* ACTION BUTTONS */}
-          <div className="d-flex gap-2 mb-3">
+          <div className="d-flex gap-2 mb-3" style={{ justifyContent: "end" }}>
             <Button variant="primary" onClick={() => setShowOnboard(true)}>
               Onboard Authority
             </Button>
-            <Button variant="success" onClick={() => setShowApply(true)}>
+            <Button
+              variant="success"
+              style={{ width: "290px" }}
+              onClick={() => setShowApply(true)}
+            >
               Apply Authority
             </Button>
           </div>
 
           {/* TABLE */}
-          <Card className="shadow-sm">
-            <Table striped bordered hover responsive className="align-middle">
-              <thead className="table-light">
+          <Table striped bordered hover responsive className="align-middle">
+            <thead className="table-light">
+              <tr>
+                <th style={{ width: "80px" }}>Sl.No</th>
+                <th>Authority</th>
+                {/* <th style={{ width: "120px" }}>Country</th> */}
+                <th style={{ width: "120px" }}>PDF</th>
+                <th>Last Updated</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {[...appliedUS, ...appliedCanada].length === 0 ? (
                 <tr>
-                  <th style={{ width: "80px" }}>Sl.No</th>
-                  <th>Authority</th>
-                  {/* <th style={{ width: "120px" }}>Country</th> */}
-                  <th style={{ width: "120px" }}>PDF</th>
+                  <td colSpan={4} className="text-center text-muted py-4">
+                    No applied authorities
+                  </td>
                 </tr>
-              </thead>
+              ) : (
+                [...appliedUS, ...appliedCanada].map((item, index) => (
+                  <tr key={`${item.id}-${index}`}>
+                    <td>{index + 1}</td>
 
-              <tbody>
-                {[...appliedUS, ...appliedCanada].length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="text-center text-muted py-4">
-                      No applied authorities
-                    </td>
-                  </tr>
-                ) : (
-                  [...appliedUS, ...appliedCanada].map((item, index) => (
-                    <tr key={`${item.id}-${index}`}>
-                      <td>{index + 1}</td>
+                    <td className="text-capitalize">{item.authority_name}</td>
 
-                      <td className="text-capitalize">{item.authority_name}</td>
-
-                      {/* <td>
+                    {/* <td>
                         {item.is_us == true ? (
                           <span className="badge bg-primary">US</span>
                         ) : (
@@ -164,28 +170,31 @@ const Authority = () => {
                         )}
                       </td> */}
 
-                      <td>
-                        {item?.document_path ? (
-                          <a
-                            href={`/${item.document_path}`} // path to your PDF
-                            download={`${item.authority_name}.pdf`} // generate filename dynamically
-                            target="_blank" // open in new tab
-                            rel="noreferrer"
-                            className="btn btn-sm btn-outline-success"
-                            title="View/Download PDF"
-                          >
-                            <i className="bi bi-file-pdf" />
-                          </a>
-                        ) : (
-                          <span className="text-muted">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          </Card>
+                    <td>
+                      {item?.document_path ? (
+                        <a
+                          onClick={() =>
+                            downloadAuthorityPdf(item.id, item.authority_name)
+                          }
+                          target="_blank" // open in new tab
+                          rel="noreferrer"
+                          className="btn btn-sm btn-outline-success"
+                          title="View/Download PDF"
+                        >
+                          <i className="bi bi-file-pdf" />
+                        </a>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </td>
+                    <td>
+                      {moment(item.created_at).format("DD-MM-YYYY hh:mm:A")}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
 
           {/* APPLY AUTHORITY MODAL */}
           <Modal show={showApply} onHide={() => setShowApply(false)} size="lg">
@@ -244,13 +253,14 @@ const Authority = () => {
             </Modal.Body>
 
             <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowApply(false)}>
+              {/* <Button variant="secondary" onClick={() => setShowApply(false)}>
                 Cancel
-              </Button>
+              </Button> */}
               <Button
                 variant="success"
                 onClick={handleApply}
                 disabled={selected.length === 0}
+                style={{ width: "100%" }}
               >
                 Apply ({selected.length})
               </Button>

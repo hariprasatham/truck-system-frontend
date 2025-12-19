@@ -200,6 +200,46 @@ const useMasterStore = create((set,get) => ({
     }
   },
 
+  downloadAuthorityPdf: async (applyId, authorityName) => {
+    set({ loading: true, error: null });
+
+    try {
+      const response = await api.get(
+        `/authority/document/${applyId}`,
+        {
+          responseType: "blob", // 🔴 IMPORTANT
+        }
+      );
+
+      // Create blob URL
+      const blob = new Blob([response.data], {
+        type: "application/pdf",
+      });
+      const url = window.URL.createObjectURL(blob);
+
+      // Trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${authorityName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      set({ loading: false });
+      return true;
+    } catch (err) {
+      console.error("Download failed:", err);
+      set({
+        loading: false,
+        error: err.response?.data?.message || "Failed to download PDF",
+      });
+      return false;
+    }
+  },
+  
   PdfapplyAuthority: async (authorityId, pdf) => {
     set({ loading: true, error: null });
   

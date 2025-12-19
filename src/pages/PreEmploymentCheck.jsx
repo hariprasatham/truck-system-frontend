@@ -47,8 +47,14 @@ const PreEmploymentCheck = () => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const { createApplication, currentApplication, fetchApplicationById, updateApplication } = usePreEmploymentApplicationStore();
+  const {
+    createApplication,
+    currentApplication,
+    fetchApplicationById,
+    updateApplication,
+  } = usePreEmploymentApplicationStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -61,109 +67,142 @@ const PreEmploymentCheck = () => {
     const newErrors = {};
 
     // Required fields validation
-    if (!formData.application_date) newErrors.application_date = 'Application date is required';
-    if (!formData.full_name?.trim()) newErrors.full_name = 'Full name is required';
-    if (!formData.social_insurance?.trim()) newErrors.social_insurance = 'Social insurance number is required';
-    if (!formData.country_of_birth?.trim()) newErrors.country_of_birth = 'Country of birth is required';
-    if (!formData.nationality?.trim()) newErrors.nationality = 'Nationality is required';
-    if (!formData.address?.trim()) newErrors.address = 'Address is required';
-    if (!formData.city?.trim()) newErrors.city = 'City is required';
-    if (!formData.province?.trim()) newErrors.province = 'Province is required';
-    if (!formData.postal_code?.trim()) newErrors.postal_code = 'Postal code is required';
-    if (!formData.daytime_phone?.trim()) newErrors.daytime_phone = 'Daytime phone is required';
-    if (!formData.emergency_phone?.trim()) newErrors.emergency_phone = 'Emergency phone is required';
+    if (!formData.application_date)
+      newErrors.application_date = "Application date is required";
+    if (!formData.full_name?.trim())
+      newErrors.full_name = "Full name is required";
+    if (!formData.social_insurance?.trim())
+      newErrors.social_insurance = "Social insurance number is required";
+    if (!formData.country_of_birth?.trim())
+      newErrors.country_of_birth = "Country of birth is required";
+    if (!formData.nationality?.trim())
+      newErrors.nationality = "Nationality is required";
+    if (!formData.address?.trim()) newErrors.address = "Address is required";
+    if (!formData.city?.trim()) newErrors.city = "City is required";
+    if (!formData.province?.trim()) newErrors.province = "Province is required";
+    if (!formData.postal_code?.trim())
+      newErrors.postal_code = "Postal code is required";
+    if (!formData.daytime_phone?.trim())
+      newErrors.daytime_phone = "Daytime phone is required";
+    if (!formData.emergency_phone?.trim())
+      newErrors.emergency_phone = "Emergency phone is required";
     if (!formData.email?.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
-    if (!formData.driver_license_number?.trim()) newErrors.driver_license_number = 'Driver license number is required';
-    if (!formData.license_issuing_province?.trim()) newErrors.license_issuing_province = 'Issuing province is required';
-    if (!formData.license_class?.trim()) newErrors.license_class = 'License class is required';
-    if (!formData.license_issue_date) newErrors.license_issue_date = 'Issue date is required';
-    if (!formData.license_expiry_date) newErrors.license_expiry_date = 'Expiry date is required';
-    if (!formData.position_applied?.trim()) newErrors.position_applied = 'Position applied is required';
-    if (formData.experience_years === '') newErrors.experience_years = 'Years of experience is required';
-    if (!formData.presently_employed) newErrors.presently_employed = 'Presently employed is required';
+    if (!formData.driver_license_number?.trim())
+      newErrors.driver_license_number = "Driver license number is required";
+    if (!formData.license_issuing_province?.trim())
+      newErrors.license_issuing_province = "Issuing province is required";
+    if (!formData.license_class?.trim())
+      newErrors.license_class = "License class is required";
+    if (!formData.license_issue_date)
+      newErrors.license_issue_date = "Issue date is required";
+    if (!formData.license_expiry_date)
+      newErrors.license_expiry_date = "Expiry date is required";
+    if (!formData.position_applied?.trim())
+      newErrors.position_applied = "Position applied is required";
+    if (formData.experience_years === "")
+      newErrors.experience_years = "Years of experience is required";
+    if (!formData.presently_employed)
+      newErrors.presently_employed = "Presently employed is required";
 
     // Custom validations
-    if (formData.social_insurance && !/^\d{3}-\d{3}-\d{3}$/.test(formData.social_insurance)) {
-      newErrors.social_insurance = 'Invalid SIN format (XXX-XXX-XXX)';
+    if (
+      formData.social_insurance &&
+      !/^\d{3}-\d{3}-\d{3}$/.test(formData.social_insurance)
+    ) {
+      newErrors.social_insurance = "Invalid SIN format (XXX-XXX-XXX)";
     }
-    if (formData.postal_code && !/^[A-Za-z][0-9][A-Za-z] ?[0-9][A-Za-z][0-9]$/i.test(formData.postal_code)) {
-  newErrors.postal_code = 'Invalid postal code format (e.g., A1A 1A1)';
-}
+    if (
+      formData.postal_code &&
+      !/^(?:\d{6}|[A-Za-z0-9]{6})$/.test(formData.postal_code)
+    ) {
+      newErrors.postal_code = "Invalid postal code format (e.g., A1A 1A1)";
+    }
     if (formData.phone && !/^\d{3}-\d{3}-\d{4}$/.test(formData.phone)) {
-      newErrors.phone = 'Invalid phone format (XXX-XXX-XXXX)';
+      newErrors.phone = "Invalid phone format (XXX-XXX-XXXX)";
     }
-    if (formData.license_issue_date && formData.license_expiry_date &&
-      new Date(formData.license_issue_date) > new Date(formData.license_expiry_date)) {
-      newErrors.license_expiry_date = 'Expiry date must be after issue date';
+    if (
+      formData.license_issue_date &&
+      formData.license_expiry_date &&
+      new Date(formData.license_issue_date) >
+        new Date(formData.license_expiry_date)
+    ) {
+      newErrors.license_expiry_date = "Expiry date must be after issue date";
     }
 
     return newErrors;
   };
 
   useEffect(() => {
-  if (location.state?.applicationId) {
-    fetchApplicationById(location.state.applicationId);
-  }
-}, [location.state?.applicationId]);
+    if (location.state?.applicationId) {
+      fetchApplicationById(location.state.applicationId);
+    }
+  }, [location.state?.applicationId]);
 
-useEffect(() => {
-  if (currentApplication) {
-    const formattedApplication = {
-      ...currentApplication,
-      application_date: currentApplication.application_date 
-        ? new Date(currentApplication.application_date).toISOString().split('T')[0] 
-        : '',
-      license_issue_date: currentApplication.license_issue_date 
-        ? new Date(currentApplication.license_issue_date).toISOString().split('T')[0] 
-        : '',
-      license_expiry_date: currentApplication.license_expiry_date 
-        ? new Date(currentApplication.license_expiry_date).toISOString().split('T')[0] 
-        : ''
-    };
-    setFormData(formattedApplication);
-  }
-}, [currentApplication]);
+  useEffect(() => {
+    if (currentApplication) {
+      const formattedApplication = {
+        ...currentApplication,
+        application_date: currentApplication.application_date
+          ? new Date(currentApplication.application_date)
+              .toISOString()
+              .split("T")[0]
+          : "",
+        license_issue_date: currentApplication.license_issue_date
+          ? new Date(currentApplication.license_issue_date)
+              .toISOString()
+              .split("T")[0]
+          : "",
+        license_expiry_date: currentApplication.license_expiry_date
+          ? new Date(currentApplication.license_expiry_date)
+              .toISOString()
+              .split("T")[0]
+          : "",
+      };
+      setFormData(formattedApplication);
+    }
+  }, [currentApplication]);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formErrors = validateForm();
     setErrors(formErrors);
 
-    console.log(formErrors)
-
+    console.log(formErrors);
 
     if (Object.keys(formErrors).length === 0) {
-       try {
+      try {
+        setLoading(true);
         if (location.state?.applicationId) {
-
           if (formData.hasOwnProperty("id")) delete formData.id;
           if (formData.hasOwnProperty("pdf_file")) delete formData.pdf_file;
-          if (formData.hasOwnProperty("createdAt")) delete formData.createdAt
-          if (formData.hasOwnProperty("updatedAt")) delete formData.updatedAt
+          if (formData.hasOwnProperty("createdAt")) delete formData.createdAt;
+          if (formData.hasOwnProperty("updatedAt")) delete formData.updatedAt;
 
-          console.log(formData)
+          console.log(formData);
 
           await updateApplication(location.state.applicationId, formData);
         } else {
           await createApplication(formData);
         }
-      setFormData(initialFormData);
-      navigate("/pre-employment-application");
-      // Optionally show success message or redirect
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      // Handle API error (e.g., show error message to user)
-    }
+        setFormData(initialFormData);
+        navigate("/pre-employment-application");
+        // Optionally show success message or redirect
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        // Handle API error (e.g., show error message to user)
+      } finally {
+        setLoading(false); // 🔹 stop loader (safe even if error)
+      }
     } else {
       // Scroll to the first error
       const firstErrorField = Object.keys(formErrors)[0];
       const element = document.querySelector(`[name="${firstErrorField}"]`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
         element.focus();
       }
     }
@@ -176,7 +215,10 @@ useEffect(() => {
           Driver Employment / Pre-Employment Application
         </h3>
 
-        <Form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow-sm">
+        <Form
+          onSubmit={handleSubmit}
+          className="p-4 border rounded bg-white shadow-sm"
+        >
           <Row className="g-3">
             {/* Date & Name */}
             <Col md={4}>
@@ -187,7 +229,7 @@ useEffect(() => {
                 value={formData.application_date}
                 onChange={handleChange}
                 isInvalid={!!errors.application_date}
-                className={errors.application_date ? 'is-invalid' : ''}
+                className={errors.application_date ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.application_date}
@@ -201,7 +243,7 @@ useEffect(() => {
                 value={formData.full_name}
                 onChange={handleChange}
                 isInvalid={!!errors.full_name}
-                className={errors.full_name ? 'is-invalid' : ''}
+                className={errors.full_name ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.full_name}
@@ -218,7 +260,7 @@ useEffect(() => {
                 onChange={handleChange}
                 placeholder="XXX-XXX-XXX"
                 isInvalid={!!errors.social_insurance}
-                className={errors.social_insurance ? 'is-invalid' : ''}
+                className={errors.social_insurance ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.social_insurance}
@@ -232,7 +274,7 @@ useEffect(() => {
                 value={formData.country_of_birth}
                 onChange={handleChange}
                 isInvalid={!!errors.country_of_birth}
-                className={errors.country_of_birth ? 'is-invalid' : ''}
+                className={errors.country_of_birth ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.country_of_birth}
@@ -246,7 +288,7 @@ useEffect(() => {
                 value={formData.nationality}
                 onChange={handleChange}
                 isInvalid={!!errors.nationality}
-                className={errors.nationality ? 'is-invalid' : ''}
+                className={errors.nationality ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.nationality}
@@ -271,7 +313,7 @@ useEffect(() => {
               >
                 <option value="">Select</option>
                 <option value={true}>Yes</option>
-                <option value={false} >No</option>
+                <option value={false}>No</option>
               </Form.Select>
             </Col>
 
@@ -302,7 +344,7 @@ useEffect(() => {
                 value={formData.province}
                 onChange={handleChange}
                 isInvalid={!!errors.province}
-                className={errors.province ? 'is-invalid' : ''}
+                className={errors.province ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.province}
@@ -317,7 +359,7 @@ useEffect(() => {
                 value={formData.postal_code}
                 onChange={handleChange}
                 isInvalid={!!errors.postal_code}
-                className={errors.postal_code ? 'is-invalid' : ''}
+                className={errors.postal_code ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.postal_code}
@@ -334,7 +376,7 @@ useEffect(() => {
                 onChange={handleChange}
                 placeholder="XXX-XXX-XXXX"
                 isInvalid={!!errors.daytime_phone}
-                className={errors.daytime_phone ? 'is-invalid' : ''}
+                className={errors.daytime_phone ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.daytime_phone}
@@ -349,7 +391,7 @@ useEffect(() => {
                 onChange={handleChange}
                 placeholder="XXX-XXX-XXXX"
                 isInvalid={!!errors.emergency_phone}
-                className={errors.emergency_phone ? 'is-invalid' : ''}
+                className={errors.emergency_phone ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.emergency_phone}
@@ -364,7 +406,7 @@ useEffect(() => {
                 onChange={handleChange}
                 placeholder="example@domain.com"
                 isInvalid={!!errors.email}
-                className={errors.email ? 'is-invalid' : ''}
+                className={errors.email ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.email}
@@ -468,7 +510,7 @@ useEffect(() => {
                 value={formData.presently_employed}
                 onChange={handleChange}
                 isInvalid={!!errors.presently_employed}
-                className={errors.presently_employed ? 'is-invalid' : ''}
+                className={errors.presently_employed ? "is-invalid" : ""}
               >
                 <option value="">Select</option>
                 <option value={true}>Yes</option>
@@ -521,7 +563,7 @@ useEffect(() => {
                 value={formData.driver_license_number}
                 onChange={handleChange}
                 isInvalid={!!errors.driver_license_number}
-                className={errors.driver_license_number ? 'is-invalid' : ''}
+                className={errors.driver_license_number ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.driver_license_number}
@@ -535,7 +577,7 @@ useEffect(() => {
                 value={formData.license_issuing_province}
                 onChange={handleChange}
                 isInvalid={!!errors.license_issuing_province}
-                className={errors.license_issuing_province ? 'is-invalid' : ''}
+                className={errors.license_issuing_province ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.license_issuing_province}
@@ -549,7 +591,7 @@ useEffect(() => {
                 value={formData.license_class}
                 onChange={handleChange}
                 isInvalid={!!errors.license_class}
-                className={errors.license_class ? 'is-invalid' : ''}
+                className={errors.license_class ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.license_class}
@@ -563,7 +605,7 @@ useEffect(() => {
                 value={formData.license_issue_date}
                 onChange={handleChange}
                 isInvalid={!!errors.license_issue_date}
-                className={errors.license_issue_date ? 'is-invalid' : ''}
+                className={errors.license_issue_date ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.license_issue_date}
@@ -577,7 +619,7 @@ useEffect(() => {
                 value={formData.license_expiry_date}
                 onChange={handleChange}
                 isInvalid={!!errors.license_expiry_date}
-                className={errors.license_expiry_date ? 'is-invalid' : ''}
+                className={errors.license_expiry_date ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.license_expiry_date}
@@ -592,8 +634,7 @@ useEffect(() => {
                 onChange={handleChange}
               >
                 <option value="">Select</option>
-                <option value={false}
-                >No</option>
+                <option value={false}>No</option>
                 <option value={true}>Yes</option>
               </Form.Select>
             </Col>
@@ -640,7 +681,7 @@ useEffect(() => {
                 value={formData.position_applied}
                 onChange={handleChange}
                 isInvalid={!!errors.position_applied}
-                className={errors.position_applied ? 'is-invalid' : ''}
+                className={errors.position_applied ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.position_applied}
@@ -656,7 +697,7 @@ useEffect(() => {
                 value={formData.experience_years}
                 onChange={handleChange}
                 isInvalid={!!errors.experience_years}
-                className={errors.experience_years ? 'is-invalid' : ''}
+                className={errors.experience_years ? "is-invalid" : ""}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.experience_years}
@@ -667,7 +708,8 @@ useEffect(() => {
           <div className="mt-4">
             {location.state?.applicationId ? (
               <Button type="submit" variant="success">
-                <i className="bi bi-file-earmark-text"></i> Update & Generate PDF
+                <i className="bi bi-file-earmark-text"></i> Update & Generate
+                PDF
               </Button>
             ) : (
               <Button type="submit" variant="success">

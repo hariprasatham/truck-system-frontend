@@ -5,7 +5,7 @@ import useMasterStore from "../store/masterStore";
 const ExpandableComponent = ({ data }) => {
   const [tab, setTab] = useState("active");
   const listToShow = tab === "active" ? data.list : data.history;
-
+  const { downloadAuthorityPdf } = useMasterStore();
   return (
     <div style={{ padding: "10px" }}>
       {/* Tabs for Active / History */}
@@ -36,7 +36,7 @@ const ExpandableComponent = ({ data }) => {
             <tr>
               <th>Sl</th>
               <th>Authority</th>
-              <th>Country</th>
+              {/* <th>Country</th> */}
               {/* <th>Applied Count</th> */}
               <th style={{ width: "120px" }}>Document</th>
 
@@ -48,15 +48,19 @@ const ExpandableComponent = ({ data }) => {
               <tr key={item.id}>
                 <td>{idx + 1}</td>
                 <td>{item.Authority.authority_name}</td>
-                <td>
+                {/* <td>
                   {item.is_us && "US "}
                   {item.is_canada && "Canada"}
-                </td>
+                </td> */}
                 <td>
                   {item?.document_path ? (
                     <a
-                      href={`/${item.document_path}`} // path to your PDF
-                      download={`${item.Authority.authority_name}.pdf`} // generate filename dynamically
+                      onClick={() =>
+                        downloadAuthorityPdf(
+                          item.id,
+                          item.Authority?.authority_name
+                        )
+                      }
                       target="_blank" // open in new tab
                       rel="noreferrer"
                       className="btn btn-sm btn-outline-success"
@@ -101,6 +105,18 @@ const ApplyList = () => {
     {
       name: "Company",
       selector: (row) => row.company.company_name,
+      sortable: true,
+    },
+    {
+      name: "Country",
+      selector: (row) =>
+        row.company.is_us && row.company.is_canada
+          ? "US & Canada"
+          : row.company.is_us
+          ? "US"
+          : row.company.is_canada
+          ? "Canada"
+          : "-",
       sortable: true,
     },
     // {

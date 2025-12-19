@@ -57,6 +57,9 @@ const Authorities = () => {
     setCurrentPage(page);
   };
 
+  const capitalizeFirst = (str = "") =>
+    str.charAt(0).toUpperCase() + str.slice(1);
+
   // ------------------------
   //  SUBMIT (ADD)
   // ------------------------
@@ -64,7 +67,7 @@ const Authorities = () => {
     e.preventDefault();
 
     const payload = {
-      authority_name: authorityName,
+      authority_name: capitalizeFirst(authorityName),
       is_us: isUS,
       is_canada: isCanada,
     };
@@ -249,6 +252,7 @@ const Authorities = () => {
                 value={authorityName}
                 onChange={(e) => setAuthorityName(e.target.value)}
                 required
+                style={{ textTransform: "capitalize" }}
               />
             </Form.Group>
 
