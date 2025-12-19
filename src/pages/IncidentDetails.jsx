@@ -200,8 +200,8 @@ const IncidentDetails = () => {
   };
 
   const handleOpenMap = () => {
-  setShowMapModal(true);
-};
+    setShowMapModal(true);
+  };
 
   const handleStatusUpdate = async () => {
     if (!statusForm.status) return;
@@ -209,7 +209,7 @@ const IncidentDetails = () => {
     try {
       setMediaData({});
       setLoadingStates({});
-      await StatusAndSignature(incidentId, {
+      const res = await StatusAndSignature(incidentId, {
         status: statusForm.status,
         corrective_actions: statusForm.corrective_actions
       });
@@ -220,7 +220,7 @@ const IncidentDetails = () => {
       toast.success('Incident status updated successfully');
     } catch (error) {
       console.error('Error updating incident status:', error);
-      toast.error('Failed to update incident status');
+      toast.error(error?.response?.data?.message?.error||'Failed to update incident status');
     }
   };
 
@@ -265,23 +265,23 @@ const IncidentDetails = () => {
     }
   };
 
-const handleDownloadAll = async () => {
-  try {
-    const blob = await downloadAllReports(incidentId);
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `incident-${incidentId}-evidence.zip`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-    toast.success('All evidence downloaded successfully');
-  } catch (error) {
-    console.error('Error downloading evidence:', error);
-    toast.error(error.response?.data?.message || 'Failed to download evidence');
-  }
-};
+  const handleDownloadAll = async () => {
+    try {
+      const blob = await downloadAllReports(incidentId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `incident-${incidentId}-evidence.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('All evidence downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading evidence:', error);
+      toast.error(error.response?.data?.message || 'Failed to download evidence');
+    }
+  };
 
 
   const location = incident?.location || null;
@@ -293,15 +293,19 @@ const handleDownloadAll = async () => {
       submitted: { variant: "primary", text: "Submitted" },
       under_review: { variant: "warning", text: "Under Review" },
       approved: { variant: "success", text: "Approved" },
-      rejected: { variant: "danger", text: "Rejected" }
+      rejected: { variant: "danger", text: "Rejected" },
+      warning: { variant: "warning", text: "Warning" },
+      refer_to_higher_management: { variant: "info", text: "Refer To Higher Management" },
+      refer_to_training: { variant: "info", text: "Refer To Training" },
+      insurance_claim_initiated: { variant: "success", text: "Insurance Claim Initiated" },
+      need_to_intiate_insurance_claim: { variant: "warning", text: "Need to Initiate Insurance Claim" },
+      closed: { variant: "secondary", text: "Closed" }
     };
-
     const config = statusConfig[status] || { variant: "secondary", text: status };
-    return <Badge bg={config.variant}>{config.text}</Badge>;
+    return <Badge bg={config?.variant} className="text-capitalize">{config?.text?.replace(/_/g, ' ')}</Badge>;
   };
 
   const handleSaveMeeting = async () => {
-    console.log("handleSave", meetingForm)
     try {
       await addMeetingNotes(incidentId, meetingForm);
       // You might want to add a success message or refresh the incident data here
@@ -380,7 +384,7 @@ const handleDownloadAll = async () => {
                   <Button
                     variant="link"
                     className="p-0 text-decoration-none"
-                  onClick={handleOpenMap}
+                    onClick={handleOpenMap}
                   >
                     {`${location?.latitude || ''}, ${location?.longitude || ''} (View Map)`}
                   </Button>
@@ -799,7 +803,7 @@ const handleDownloadAll = async () => {
           <Button
             variant="primary"
             onClick={handleStatusUpdate}
-            disabled={loading || !statusForm.status}
+            disabled={loading || !statusForm?.status}
           >
             {loading ? 'Updating...' : 'Update Status'}
           </Button>
