@@ -6,6 +6,7 @@ import TableLoader from "../components/TableLoader";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { Badge } from "react-bootstrap";
 
 const IncidentManagement = () => {
   const { incidents, loading, getAllIncidents, pagination, deleteIncident } =
@@ -70,15 +71,28 @@ const IncidentManagement = () => {
       name: "Status",
       selector: (row) => row?.status,
       sortable: true,
-      cell: (row) => (
-        <span
-          className={`status-badge ${
-            row.status === "active" ? "active" : "inactive"
-          }`}
-        >
-          {row?.status?.charAt(0)?.toUpperCase() + row?.status?.slice(1)}
-        </span>
-      ),
+      cell: (row) => {
+        const statusConfig = {
+          submitted: { variant: "primary", text: "Submitted" },
+          under_review: { variant: "warning", text: "Under Review" },
+          approved: { variant: "success", text: "Approved" },
+          rejected: { variant: "danger", text: "Rejected" },
+          warning: { variant: "warning", text: "Warning" },
+          refer_to_higher_management: { variant: "info", text: "Ref. to Mngmt" },
+          refer_to_training: { variant: "info", text: "Ref. to Training" },
+          insurance_claim_initiated: { variant: "success", text: "Claim Initiated" },
+          need_to_intiate_insurance_claim: { variant: "warning", text: "Initiate Claim" },
+          closed: { variant: "secondary", text: "Closed" }
+        };
+        const config = statusConfig[row.status] || { variant: "secondary", text: row.status };
+        return (
+          <div className="status-cell" style={{ minWidth: '120px' }}>
+            <Badge bg={config.variant} className="text-capitalize text-truncate d-inline-block" style={{ maxWidth: '100%' }}>
+              {config.text.replace(/_/g, ' ')}
+            </Badge>
+          </div>
+        );
+      }
     },
     {
       name: "Truck No",

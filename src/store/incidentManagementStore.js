@@ -85,7 +85,7 @@ const useIncidentManagementStore = create(
           error: error.response?.data?.message || 'Failed to update incident status and signature',
           currentIncident: null
         });
-        return null;
+        throw error;
       } finally {
         set({ loading: false });
       }
@@ -127,13 +127,6 @@ const useIncidentManagementStore = create(
           mimeType = mimeTypes[ext] || 'audio/mpeg';
         }
         const blob = new Blob([response.data], { type: mimeType });
-
-        console.log('Audio blob created:', {
-          size: blob.size,
-          type: mimeType,
-          filePath,
-          blobType: blob.type
-        });
         return {
           blob,
           type: mimeType
