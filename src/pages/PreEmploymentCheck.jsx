@@ -116,11 +116,13 @@ const PreEmploymentCheck = () => {
       newErrors.social_insurance = "Invalid SIN format (XXX-XXX-XXX)";
     }
     if (
-      formData.postal_code &&
-      !/^(?:\d{6}|[A-Za-z0-9]{6})$/.test(formData.postal_code)
-    ) {
-      newErrors.postal_code = "Invalid postal code format (e.g., A1A 1A1)";
-    }
+  formData.postal_code &&
+  !/^[A-Za-z0-9]{6}$/.test(formData.postal_code)
+) {
+  newErrors.postal_code =
+    "Postal code must be exactly 6 characters (letters and numbers only)";
+}
+
     if (formData.phone && !/^\d{3}-\d{3}-\d{4}$/.test(formData.phone)) {
       newErrors.phone = "Invalid phone format (XXX-XXX-XXXX)";
     }
@@ -128,7 +130,7 @@ const PreEmploymentCheck = () => {
       formData.license_issue_date &&
       formData.license_expiry_date &&
       new Date(formData.license_issue_date) >
-        new Date(formData.license_expiry_date)
+      new Date(formData.license_expiry_date)
     ) {
       newErrors.license_expiry_date = "Expiry date must be after issue date";
     }
@@ -148,18 +150,18 @@ const PreEmploymentCheck = () => {
         ...currentApplication,
         application_date: currentApplication.application_date
           ? new Date(currentApplication.application_date)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : "",
         license_issue_date: currentApplication.license_issue_date
           ? new Date(currentApplication.license_issue_date)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : "",
         license_expiry_date: currentApplication.license_expiry_date
           ? new Date(currentApplication.license_expiry_date)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : "",
       };
       setFormData(formattedApplication);
@@ -706,31 +708,31 @@ const PreEmploymentCheck = () => {
           </Row>
 
           <div className="mt-4 d-flex align-items-center gap-3">
-  <Button
-    type="submit"
-    variant="success"
-    disabled={loading}
-  >
-    {loading ? (
-      <>
-        <span
-          className="spinner-border spinner-border-sm me-2"
-          role="status"
-          aria-hidden="true"
-        />
-        Processing...
-      </>
-    ) : location.state?.applicationId ? (
-      <>
-        <i className="bi bi-file-earmark-text"></i> Update & Generate PDF
-      </>
-    ) : (
-      <>
-        <i className="bi bi-file-earmark-text"></i> Save & Generate PDF
-      </>
-    )}
-  </Button>
-</div>
+            <Button
+              type="submit"
+              variant="success"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Processing...
+                </>
+              ) : location.state?.applicationId ? (
+                <>
+                  <i className="bi bi-file-earmark-text"></i> Update & Generate PDF
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-file-earmark-text"></i> Save & Generate PDF
+                </>
+              )}
+            </Button>
+          </div>
 
 
           {/* <div className="mt-4">
