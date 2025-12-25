@@ -252,6 +252,58 @@ const useIncidentManagementStore = create(
       }
     },
 
+    sendFirstSafetyWarning: async (data) => {
+      try {
+        set({ loading: true, error: null });
+        const response = await api.post(`/driver/send-first-warning`, data);
+        set({ loading: false });
+        return response?.data?.results;
+      } catch (error) {
+        set({ loading: false, error: error.response?.data?.message || `Error sending first safety warning` });
+        console.error('Error sending first safety warning:', error);
+        throw error;
+      }
+    },
+
+    sendSecondSafetyWarning: async (data) => {
+      try {
+        set({ loading: true, error: null });
+        const response = await api.post(`/driver/send-second-warning`, data);
+        set({ loading: false });
+        return response?.data?.results;
+      } catch (error) {
+        set({ loading: false, error: error.response?.data?.message || `Error sending second safety warning` });
+        console.error('Error sending second safety warning:', error);
+        throw error;
+      }
+    },
+
+    sendFinalSafetyWarning: async (data) => {
+      try {
+        set({ loading: true, error: null });
+        const response = await api.post(`/driver/send-final-warning`, data);
+        set({ loading: false });
+        return response?.data?.results;
+      } catch (error) {
+        set({ loading: false, error: error.response?.data?.message || `Error sending final safety warning` });
+        console.error('Error sending final safety warning:', error);
+        throw error;
+      }
+    },
+
+    sendTerminationLetter: async (data) => {
+      try {
+        set({ loading: true, error: null });
+        const response = await api.post(`/driver/send-termination-notice`, data);
+        set({ loading: false });
+        return response?.data?.results;
+      } catch (error) {
+        set({ loading: false, error: error.response?.data?.message || `Error sending termination` });
+        console.error('Error sending termination:', error);
+        throw error;
+      }
+    },
+
     setError: (error) => set({ error }),
   }))
 );

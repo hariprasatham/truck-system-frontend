@@ -68,7 +68,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         {!collapsed && <h4 className="fw-bold mb-4 text-success">Dasher</h4>}
 
         <ul className="nav flex-column mb-auto">
-          {userMenus.map((item) => (
+          {userMenus.map((item) => {
+              return (
             <li key={item?.title} className="mb-2">
               {item?.submenu ? (
                 <>
@@ -132,7 +133,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 </Link>
               )}
             </li>
-          ))}
+          )})}
         </ul>
 
         <hr className="my-3" />

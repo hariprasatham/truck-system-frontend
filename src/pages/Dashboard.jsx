@@ -25,28 +25,30 @@ const Dashboard = () => {
         <DashboardCard
           icon="bi-truck"
           title="Total Trucks"
-          value={stats.trucks || 0}
+          value={stats?.trucks || 0}
           color="text-success"
         />
         <DashboardCard
           icon="bi-person-badge"
           title="Active Drivers"
-          value={stats.drivers || 0}
+          value={stats?.drivers || 0}
           color="text-primary"
         />
+
+
         {/* Admin-only cards */}
         {user?.role === "admin" && (
           <>
             <DashboardCard
               icon="bi-people"
               title="Total Users"
-              value={stats.users || 0}
+              value={stats?.users || 0}
               color="text-warning"
             />
             <DashboardCard
               icon="bi-building"
               title="Total Companies"
-              value={stats.companies || 0}
+              value={stats?.companies || 0}
               color="text-danger"
             />
           </>
@@ -54,18 +56,27 @@ const Dashboard = () => {
         <DashboardCard
           icon="bi-bar-chart"
           title="Total Fuel Quantity"
-          value={stats.totalQuantity || 0}
+          value={stats?.totalQuantity || 0}
           color="text-info"
         />
-        <DashboardCard
+        {/* <DashboardCard
           icon="bi-currency-rupee"
           title="Total Final Amount"
           value={stats.totalAmount || 0}
           color="text-success"
-        />
-      </div>
+        /> */}
 
-      <div className="row g-4">
+          {user.role == "safety_engineer" && (
+        <DashboardCard
+          icon="bi-radioactive"
+          title="Total Incidents"
+          value={stats?.incidents || 0}
+          color="text-primary"
+        />
+          )}
+        </div>
+
+      {/* <div className="row g-4">
         <div className="col-lg-6">
           <div className="dashboard-card shadow-sm p-3">
             <h6 className="fw-bold mb-3">Monthly Deliveries</h6>
@@ -75,7 +86,7 @@ const Dashboard = () => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
       <GlobalLoader loading={loading} />
     </div>
   );
