@@ -34,7 +34,11 @@ const IncidentDetails = () => {
     meetingNotes,
     getWitnessAudio,
     downloadReport,
-    downloadAllReports
+    downloadAllReports,
+    sendFirstSafetyWarning,
+    sendSecondSafetyWarning,
+    sendFinalSafetyWarning,
+    sendTerminationLetter,
   } = useIncidentManagementStore();
 
   const [mediaData, setMediaData] = useState({});
@@ -52,12 +56,15 @@ const IncidentDetails = () => {
     date: ""
   })
 
+  const [statusFormErrors, setStatusFormErrors] = useState(null)
+
   const [showMapModal, setShowMapModal] = useState(false);
 
 
   const [statusForm, setStatusForm] = useState({
     status: '',
-    corrective_actions: ''
+    corrective_actions: '',
+    emailType: '',
   });
 
   const fetchIncident = async () => {
@@ -203,8 +210,70 @@ const IncidentDetails = () => {
     setShowMapModal(true);
   };
 
+  const validateForm = () => {
+    const errors = {};
+    if (!statusForm.status) {
+      errors.status = "Status is required";
+    }
+    if (!statusForm.corrective_actions?.trim()) {
+      errors.corrective_actions = "Corrective actions are required";
+    }
+
+    console.log(statusForm, "statusForm")
+
+    if (statusForm?.status == "warning" && (!statusForm.emailType || !statusForm.emailType?.trim())) {
+      errors.emailType = "Warning type is required for warning status";
+      return errors
+    }
+
+    if (statusForm?.status == "warning") {
+      switch (statusForm.emailType) {
+        case 'firstSafetyWarning':
+        case 'secondSafetyWarning':
+        case 'finalSafetyWarning':
+          if (!statusForm.incidentDate) {
+            errors.incidentDate = "Incident date is required";
+          }
+          if (!statusForm.violationDetails?.trim()) {
+            errors.violationDetails = "Violation details are required";
+          }
+          break;
+        case 'terminationNotice':
+          if (!statusForm.effectiveDate) {
+            errors.effectiveDate = "Effective date is required";
+          }
+          if (!statusForm.violationDetails?.trim()) {
+            errors.violationDetails = "Violation details are required";
+          }
+          if (!statusForm.returnDeadline?.trim()) {
+            errors.returnDeadline = "Return deadline is required";
+          }
+          if (!statusForm.hrContact?.trim()) {
+            errors.hrContact = "HR contact is required";
+          }
+          break;
+        default:
+          if (!statusForm.emailType) {
+            errors.emailType = "Email type is required when status is warning";
+          }
+          break;
+      }
+    }
+
+
+    return errors;
+  };
+
   const handleStatusUpdate = async () => {
-    if (!statusForm.status) return;
+    const errors = validateForm();
+
+    console.log("errors", errors)
+
+    if (Object.keys(errors).length > 0) {
+      setStatusFormErrors(errors);
+      return;
+    }
+
 
     try {
       setMediaData({});
@@ -214,13 +283,96 @@ const IncidentDetails = () => {
         corrective_actions: statusForm.corrective_actions
       });
 
+      if (statusForm.status === 'warning' && statusForm.emailType) {
+        let emailData;
+
+
+        switch (statusForm.emailType) {
+          case 'firstSafetyWarning':
+            emailData = {
+              emailType: 'firstSafetyWarning',
+              email: incident?.driver?.email,
+              date: moment().format('MM/DD/YYYY'),
+              driverName: `${incident?.driver?.first_name} ${incident?.driver?.last_name}`,
+              driverLicenseNumber: incident?.driver?.licenses[0]?.license_number,
+              unitNumber: incident?.truck?.truck_no || 'N/A',
+              companyName: incident?.company?.company_name || 'N/A',
+              authorizedPerson: incident?.supervisor?.username || 'N/A',
+              designation: incident?.supervisor?.role || 'N/A',
+              incidentDate: statusForm.incidentDate,
+              violationDetails: statusForm.violationDetails,
+              correctiveAction: statusForm.corrective_actions
+
+            };
+            await sendFirstSafetyWarning(emailData);
+            break;
+          case 'secondSafetyWarning':
+            emailData = {
+              emailType: 'secondSafetyWarning',
+              email: incident?.driver?.email,
+              date: moment().format('MM/DD/YYYY'),
+              driverName: `${incident?.driver?.first_name} ${incident?.driver?.last_name}`,
+              driverLicenseNumber: incident?.driver?.licenses[0]?.license_number,
+              unitNumber: incident?.truck?.truck_no || 'N/A',
+              companyName: incident?.company?.company_name || 'N/A',
+              authorizedPerson: incident?.supervisor?.username || 'N/A',
+              designation: incident?.supervisor?.role || 'N/A',
+              incidentDate: statusForm.incidentDate,
+              violationDetails: statusForm.violationDetails,
+              correctiveActions: statusForm.corrective_actions
+            };
+            await sendSecondSafetyWarning(emailData);
+            break;
+          case 'finalSafetyWarning':
+            emailData = {
+              emailType: 'finalSafetyWarning',
+              email: incident?.driver?.email,
+              date: moment().format('MM/DD/YYYY'),
+              driverName: `${incident?.driver?.first_name} ${incident?.driver?.last_name}`,
+              driverLicenseNumber: incident?.driver?.licenses[0]?.license_number,
+              unitNumber: incident?.truck?.truck_no || 'N/A',
+              companyName: incident?.company?.company_name || 'N/A',
+              authorizedPerson: incident?.supervisor?.username || 'N/A',
+              designation: incident?.supervisor?.role || 'N/A',
+              incidentDate: statusForm.incidentDate,
+              violationDetails: statusForm.violationDetails,
+              correctiveActions: statusForm.corrective_actions
+            };
+            await sendFinalSafetyWarning(emailData);
+            break;
+          case 'terminationNotice':
+            emailData = {
+              emailType: 'terminationNotice',
+              email: incident?.driver?.email,
+              date: moment().format('MM/DD/YYYY'),
+              driverName: `${incident?.driver?.first_name} ${incident?.driver?.last_name}`,
+              driverLicenseNumber: incident?.driver?.licenses[0]?.license_number,
+              unitNumber: incident?.truck?.truck_no || 'N/A',
+              companyName: incident?.company?.company_name || 'N/A',
+              authorizedPerson: incident?.supervisor?.username || 'N/A',
+              designation: incident?.supervisor?.role || 'N/A',
+              effectiveDate:  statusForm?.effectiveDate ? formatDate(new Date(statusForm.effectiveDate)) : formatDate(new Date()),
+              violationDetails: statusForm?.violationDetails,
+              returnDeadline: statusForm?.returnDeadline ? formatDate(new Date(statusForm.returnDeadline)) : formatDate(new Date()),
+              hrContact: statusForm?.hrContact || '',
+            };
+            await sendTerminationLetter(emailData);
+            break;
+          default:
+            break;
+        }
+      }
+
+
       fetchIncident();
 
       setShowStatusModal(false);
       toast.success('Incident status updated successfully');
     } catch (error) {
       console.error('Error updating incident status:', error);
-      toast.error(error?.response?.data?.message?.error||'Failed to update incident status');
+      toast.error(error?.response?.data?.message?.error || 'Failed to update incident status');
+    }finally{
+      setStatusFormErrors(null)
     }
   };
 
@@ -757,7 +909,10 @@ const IncidentDetails = () => {
       </div>
 
       {/* Status Update Modal */}
-      <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)}>
+      <Modal show={showStatusModal} onHide={() => {
+        setShowStatusModal(false)
+        setStatusFormErrors(null)
+        }}>
         <Modal.Header closeButton>
           <Modal.Title>Update Incident Status</Modal.Title>
         </Modal.Header>
@@ -767,8 +922,11 @@ const IncidentDetails = () => {
               <Form.Label>Status</Form.Label>
               <Form.Select
                 value={statusForm.status}
-                onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
+                onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value, emailType: "" })}
                 disabled={loading}
+                
+                isInvalid={!!statusFormErrors?.status}
+                className={statusFormErrors?.status ? "is-invalid" : ""}
               >
                 <option value="">Select Status</option>
 
@@ -782,7 +940,148 @@ const IncidentDetails = () => {
                 <option value="need_to_intiate_insurance_claim">Need to Intiate Insurance Claim</option>
                 <option value="closed">Closed</option>
               </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.status}
+                    </Form.Control.Feedback>
             </Form.Group>
+            {
+              statusForm.status === 'warning' && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Email Type</Form.Label>
+                    <Form.Select
+                      value={statusForm?.emailType || ""}
+                      onChange={(e) => setStatusForm({ ...statusForm, emailType: e.target.value })}
+                      disabled={loading}
+                      isInvalid={!!statusFormErrors?.emailType}
+                      className={statusFormErrors?.emailType ? "is-invalid" : ""}
+                    >
+                      <option value="">Select Warning Status</option>
+
+                      <option value="firstSafetyWarning">First Safety Warning</option>
+                      <option value="secondSafetyWarning">Second Safety Warning</option>
+                      <option value="finalSafetyWarning">Final Safety Warning</option>
+                      <option value="terminationNotice">Termination Notice</option>
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.emailType}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </>
+              )
+            }{
+              statusForm.emailType == "terminationNotice" ? (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Effective Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={statusForm.effectiveDate || ''}
+                      onChange={(e) => setStatusForm({ ...statusForm, effectiveDate: e.target.value })}
+                      disabled={loading}
+                      required
+                      isInvalid={!!statusFormErrors?.effectiveDate}
+                      className={statusFormErrors?.effectiveDate ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.effectiveDate}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Violation Details</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={statusForm.violationDetails || ''}
+                      onChange={(e) => setStatusForm({ ...statusForm, violationDetails: e.target.value })}
+                      disabled={loading}
+                      placeholder="Enter details of the violations..."
+                      required
+                      isInvalid={!!statusFormErrors?.violationDetails}
+                      className={statusFormErrors?.violationDetails ? "is-invalid" : ""}
+                    />
+                    
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.violationDetails}
+                    </Form.Control.Feedback>
+                    </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Return Deadline</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={statusForm.returnDeadline || ''}
+                      onChange={(e) => setStatusForm({ ...statusForm, returnDeadline: e.target.value })}
+                      disabled={loading}
+                      placeholder="e.g., Company property, uniform, ID card, etc."
+                      required
+                      isInvalid={!!statusFormErrors?.returnDeadline}
+                      className={statusFormErrors?.returnDeadline ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.returnDeadline}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Hr contact</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={statusForm.hrContact || ''}
+                      onChange={(e) => setStatusForm({ ...statusForm, hrContact: e.target.value })}
+                      disabled={loading}
+                      placeholder="Enter HR contact information..."
+                      required
+                      isInvalid={!!statusFormErrors?.hrContact}
+                      className={statusFormErrors?.hrContact ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.hrContact}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  
+                </>
+              ) : (statusForm.emailType === "firstSafetyWarning" ||
+                statusForm.emailType === "secondSafetyWarning" ||
+                statusForm.emailType === "finalSafetyWarning") ? (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Incident Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={statusForm.incidentDate || ''}
+                      onChange={(e) => setStatusForm({ ...statusForm, incidentDate: e.target.value })}
+                      disabled={loading}
+                      required
+                      isInvalid={!!statusFormErrors?.incidentDate}
+                      className={statusFormErrors?.incidentDate ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.incidentDate}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Violation Details</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={statusForm.violationDetails || ''}
+                      onChange={(e) => setStatusForm({ ...statusForm, violationDetails: e.target.value })}
+                      disabled={loading}
+                      placeholder="Enter details of the violations..."
+                      required
+                      isInvalid={!!statusFormErrors?.violationDetails}
+                      className={statusFormErrors?.violationDetails ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {statusFormErrors?.violationDetails}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </>
+              ) : null
+            }
             <Form.Group className="mb-3">
               <Form.Label>Corrective Actions</Form.Label>
               <Form.Control
@@ -792,12 +1091,20 @@ const IncidentDetails = () => {
                 onChange={(e) => setStatusForm({ ...statusForm, corrective_actions: e.target.value })}
                 disabled={loading}
                 placeholder="Enter corrective actions taken..."
+                isInvalid={!!statusFormErrors?.corrective_actions}
+                className={statusFormErrors?.corrective_actions ? "is-invalid" : ""}
               />
+              <Form.Control.Feedback type="invalid">
+                {statusFormErrors?.corrective_actions}
+              </Form.Control.Feedback>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowStatusModal(false)} disabled={loading}>
+          <Button variant="secondary" onClick={() => {
+            setShowStatusModal(false)
+            setStatusFormErrors(null)
+            }} disabled={loading}>
             Cancel
           </Button>
           <Button
