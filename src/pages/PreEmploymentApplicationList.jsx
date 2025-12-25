@@ -170,7 +170,7 @@ const PreEmploymentApplicationList = () => {
           </button>
 
           {/* Status Actions */}
-          {row.status === "submitted" && (
+          {/* {row.status === "submitted" && (
             <Button
               size="sm"
               variant="outline-info"
@@ -207,35 +207,57 @@ const PreEmploymentApplicationList = () => {
             >
               Convert
             </Button>
+          )} */}
+        </div>
+      ),
+    },
+    {
+      name: "Status Actions",
+      cell: (row) => (
+        <div className="d-flex gap-2 align-items-center">
+
+          {/* Status Actions */}
+          {row.status === "submitted" && (
+            <Button
+              size="sm"
+              variant="outline-info"
+              onClick={() => handleStatusChange(row.id, "reviewed")}
+            >
+              Review
+            </Button>
+          )}
+
+          {row.status === "reviewed" && (
+            <>
+              <Button
+                size="sm"
+                variant="outline-success"
+                onClick={() => handleStatusChange(row.id, "approved")}
+              >
+                Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline-danger"
+                onClick={() => handleStatusChange(row.id, "rejected")}
+              >
+                Reject
+              </Button>
+            </>
+          )}
+
+          {row.status === "approved" && (
+            <Button
+              size="sm"
+              variant="outline-primary"
+              onClick={() => handleConvertToDriver(row.id)}
+            >
+              Appoint as Driver
+            </Button>
           )}
         </div>
       ),
     },
-    // {
-    //   name: "Actions",
-    //   selector: (row) => row.id,
-    //   sortable: true,
-    //   cell: (row) => (
-    //     <div className="d-flex gap-2">
-    //       <button
-    //         className="btn-action"
-    //         onClick={() => {
-    //           navigate("/pre-employment-application/form", { state: { applicationId: row.id } });
-    //         }}
-    //       >
-    //         <i className="bi bi-pencil"></i>
-    //       </button>
-    //       <button
-    //         className="btn-action"
-    //         onClick={() => {
-    //           handleDeleteApplication(row.id);
-    //         }}
-    //       >
-    //         <i className="bi bi-trash"></i>
-    //       </button>
-    //     </div>
-    //   ),
-    // }
   ];
 
   const handlePageChange = (page) => {

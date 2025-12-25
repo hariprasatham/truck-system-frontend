@@ -705,7 +705,35 @@ const PreEmploymentCheck = () => {
             </Col>
           </Row>
 
-          <div className="mt-4">
+          <div className="mt-4 d-flex align-items-center gap-3">
+  <Button
+    type="submit"
+    variant="success"
+    disabled={loading}
+  >
+    {loading ? (
+      <>
+        <span
+          className="spinner-border spinner-border-sm me-2"
+          role="status"
+          aria-hidden="true"
+        />
+        Processing...
+      </>
+    ) : location.state?.applicationId ? (
+      <>
+        <i className="bi bi-file-earmark-text"></i> Update & Generate PDF
+      </>
+    ) : (
+      <>
+        <i className="bi bi-file-earmark-text"></i> Save & Generate PDF
+      </>
+    )}
+  </Button>
+</div>
+
+
+          {/* <div className="mt-4">
             {location.state?.applicationId ? (
               <Button type="submit" variant="success">
                 <i className="bi bi-file-earmark-text"></i> Update & Generate
@@ -716,7 +744,7 @@ const PreEmploymentCheck = () => {
                 <i className="bi bi-file-earmark-text"></i> Save & Generate PDF
               </Button>
             )}
-          </div>
+          </div> */}
         </Form>
       </Container>
     </div>
