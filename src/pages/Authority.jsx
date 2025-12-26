@@ -22,6 +22,7 @@ const Authority = () => {
   // Modals
   const [showApply, setShowApply] = useState(false);
   const [showOnboard, setShowOnboard] = useState(false);
+  const [getUpdatedata, setgetUpdatedata] = useState(false);
 
   // Onboard form
   const [statusAuthorities, setStatusAuthorities] = useState([]);
@@ -47,6 +48,7 @@ const Authority = () => {
 
   const handlePdfSubmit = async () => {
     const success = await PdfapplyAuthority(onboardAuthority, pdf);
+    setgetUpdatedata(!getUpdatedata);
 
     if (success) {
       setShowOnboard(false);
@@ -81,7 +83,7 @@ const Authority = () => {
     };
 
     load();
-  }, []);
+  }, [getUpdatedata]);
 
   const handleSelect = (id) => {
     setSelected((prev) =>
