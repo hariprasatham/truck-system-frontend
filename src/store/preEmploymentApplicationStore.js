@@ -129,7 +129,7 @@ const usePreEmploymentApplicationStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const response = await api.patch(
+      const response = await api.put(
         `/preEmploymentApplication/patch/${id}/status`,
         { status }
       );
